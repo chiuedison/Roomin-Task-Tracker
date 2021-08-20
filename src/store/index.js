@@ -1,10 +1,14 @@
 import { createStore } from "vuex";
 import { db, auth } from "../firebase/firebaseInit";
+import firebase from "firebase/app";
+import { uid } from "uid";
 
 export default createStore({
   state: {
     userProfile: null,
     userLoaded: null,
+
+    groupJoined: null,
 
     taskData: [],
     taskModal: null,
@@ -63,10 +67,17 @@ export default createStore({
       state.userLoaded = true;
     },
 
-    UPDATE_USER(state) {
-      state.userProfile
+    //************************************************************/
+    //*********************** GROUP MUTATIONS ********************/
+    //************************************************************/
+
+    ADD_GROUP(state, payload) {
+      state.userProfile.groupID = payload;
     },
-    
+
+    JOINED_GROUP(state) {
+      state.groupJoined = true;
+    },
   },
   actions: {
     async GET_TASKS({ commit, state }) {
@@ -151,11 +162,9 @@ export default createStore({
       commit("UPDATE_STATUS_TO_PENDING", docID);
     },
 
-    
     //************************************************************/
     //*********************** USER ACTIONS ***********************/
     //************************************************************/
-
 
     async GET_USER_DATA({ commit, state }) {
       const user = auth.currentUser;
@@ -171,13 +180,16 @@ export default createStore({
               lastName: doc.data().lastName,
               userID: doc.data().userID,
               docID: doc.id,
-              groupID: doc.groupID,
+              groupID: doc.data().groupID,
             };
           }
         });
       }
 
       commit("USER_LOADED");
+      if (state.userProfile.groupID) {
+        commit("JOINED_GROUP");
+      }
     },
     async UPDATE_USER_DATA({ state }, payload) {
       state.userProfile.firstName = payload.firstName;
@@ -189,7 +201,61 @@ export default createStore({
         firstName: payload.firstName,
         lastName: payload.lastName,
       });
-    }
+    },
+
+    //************************************************************/
+    //*********************** GROUP ACTIONS **********************/
+    //************************************************************/
+
+    async CREATE_GROUP({ commit, state }, payload) {
+      // creating new group doc
+      const groupDoc = db.collection("groups").doc();
+      await groupDoc.set({
+        tasks: [],
+        users: [state.userProfile.userID],
+        name: payload,
+        access_code: uid(4),
+      });
+
+      // back-end updating user's group id
+      const userDoc = db.collection("users").doc(state.userProfile.docID);
+      await userDoc.update({
+        groupID: groupDoc.id,
+      });
+
+      // front-end updates
+      commit("ADD_GROUP", groupDoc.id);
+    },
+
+    async JOIN_GROUP({ commit, state }, payload) {
+      state.groupJoined = false;
+
+      const groupDB = db.collection("groups");
+      const results = await groupDB.get();
+
+      results.forEach((doc) => {
+        if (doc.data().access_code == payload) {
+          // back-end updating user's group id
+          const userDoc = db.collection("users").doc(state.userProfile.docID);
+          userDoc.update({
+            groupID: doc.id,
+          });
+          
+          // front-end updates
+          commit("ADD_GROUP", doc.id);
+
+          // updating group doc with new user
+          const groupDoc = db.collection("groups").doc(doc.id);
+          groupDoc.update({
+            users: firebase.firestore.FieldValue.arrayUnion(
+              state.userProfile.userID
+            ),
+          });
+
+          state.groupJoined = true;
+        }
+      });
+    },
   },
   modules: {},
 });

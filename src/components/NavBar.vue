@@ -51,6 +51,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+* {
+  color: white;
+}
+
 header {
   z-index: 99;
   flex-direction: row;

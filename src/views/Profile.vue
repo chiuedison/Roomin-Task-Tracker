@@ -81,6 +81,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+* {
+    color: white;
+}
+
 .nav-link {
   margin-top: 32px;
   margin-left: 32px;

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="userLoaded" class="home container">
+  <div v-if="userLoaded && userProfile.groupID" class="home container">
     <h1 class="hello">Hello, {{ userProfile.firstName }}</h1>
     <div class="header flex">
       <div class="left flex flex-column">
@@ -77,6 +77,7 @@ export default {
 
     async checkGroups() {
       await this.GET_USER_DATA();
+
       console.log(this.userProfile.groupID);
       if (!this.userProfile.groupID) {
         this.$router.push("Groups");
@@ -84,7 +85,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(["taskData", "userProfile", "userLoaded"]),
+    ...mapState(["taskData", "userProfile", "userLoaded", "groupJoined"]),
 
     filteredData() {
       return this.taskData.filter((task) => {

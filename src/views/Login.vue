@@ -40,6 +40,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+* {
+  color: white;
+}
+
 .login-wrapper {
   align-items: center;
   justify-content: center;
