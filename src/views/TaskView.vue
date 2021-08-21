@@ -9,14 +9,14 @@
         <div
           class="status-button flex"
           :class="{
-            paid: currentTask.invoicePaid,
-            draft: currentTask.invoiceDraft,
-            pending: currentTask.invoicePending,
+            paid: currentTask.taskPaid,
+            draft: currentTask.taskDraft,
+            pending: currentTask.taskPending,
           }"
         >
-          <span v-if="currentTask.invoicePaid">Paid</span>
-          <span v-if="currentTask.invoiceDraft">Draft</span>
-          <span v-if="currentTask.invoicePending">Pending</span>
+          <span v-if="currentTask.taskPaid">Paid</span>
+          <span v-if="currentTask.taskDraft">Draft</span>
+          <span v-if="currentTask.taskPending">Pending</span>
         </div>
       </div>
       <div class="right flex">
@@ -27,14 +27,14 @@
           Delete
         </button>
         <button
-          v-if="currentTask.invoicePending"
+          v-if="currentTask.taskPending"
           @click="updateToPaid(currentTask.docID)"
           class="green"
         >
           Mark as Paid
         </button>
         <button
-          v-if="currentTask.invoicePaid || currentTask.invoiceDraft"
+          v-if="currentTask.taskPaid || currentTask.taskDraft"
           @click="updateToPending(currentTask.docID)"
           class="orange"
         >
@@ -46,7 +46,7 @@
     <div class="task-details flex flex-column">
       <div class="top flex">
         <div class="left flex flex-column">
-          <p><span>#</span>{{ currentTask.invoiceID }}</p>
+          <p><span>#</span>{{ currentTask.taskID }}</p>
           <p>{{ currentTask.productDescription }}</p>
         </div>
         <div class="right flex flex-column">
@@ -58,8 +58,8 @@
       </div>
       <div class="middle flex">
         <div class="payment flex flex-column">
-          <h4>Invoice Date</h4>
-          <p>{{ currentTask.invoiceDate }}</p>
+          <h4>Task Date</h4>
+          <p>{{ currentTask.taskDate }}</p>
           <h4>Payment Date</h4>
           <p>{{ currentTask.paymentDueDate }}</p>
         </div>
@@ -85,7 +85,7 @@
             <p>Total</p>
           </div>
           <div
-            v-for="(item, index) in currentTask.invoiceItemList"
+            v-for="(item, index) in currentTask.taskItemList"
             :key="index"
             class="item flex"
           >
@@ -97,7 +97,7 @@
         </div>
         <div class="total flex">
           <p>Amount Due</p>
-          <p>{{ currentTask.invoiceTotal }}</p>
+          <p>{{ currentTask.taskTotal }}</p>
         </div>
       </div>
     </div>
@@ -121,7 +121,7 @@ export default {
     ...mapActions(["DELETE_TASK", "UPDATE_STATUS_TO_PENDING", "UPDATE_STATUS_TO_PAID"]),
 
     getCurrentTask() {
-      this.SET_CURRENT_TASK(this.$route.params.invoiceID);
+      this.SET_CURRENT_TASK(this.$route.params.taskID);
 
       this.currentTask = this.currentTaskArray[0];
     },

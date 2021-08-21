@@ -1,10 +1,10 @@
 <template>
   <div
     @click="checkClick"
-    ref="invoiceWrap"
-    class="invoice-wrap flex flex-column"
+    ref="taskWrap"
+    class="task-wrap flex flex-column"
   >
-    <form @submit.prevent="submitForm" class="invoice-content">
+    <form @submit.prevent="submitForm" class="task-content">
       <Loading v-show="loading" />
       <h1 v-if="!editTask">New Task</h1>
       <h1 v-else>Edit Task</h1>
@@ -91,15 +91,15 @@
         </div>
       </div>
 
-      <div class="invoice-work flex flex-column">
+      <div class="task-work flex flex-column">
         <div class="payment flex">
           <div class="input flex flex-column">
-            <label for="invoice-date">Invoice Date</label>
+            <label for="task-date">Task Date</label>
             <input
               disabled
               type="text"
-              id="invoice-date"
-              v-model="invoiceDate"
+              id="task-date"
+              v-model="taskDate"
             />
           </div>
           <div class="input flex flex-column">
@@ -144,7 +144,7 @@
             </tr>
             <tr
               class="table-items flex"
-              v-for="(item, index) in invoiceItemList"
+              v-for="(item, index) in taskItemList"
               :key="index"
             >
               <td class="item-name">
@@ -160,14 +160,14 @@
                 ${{ (item.total = item.qty * item.price) }}
               </td>
               <img
-                @click="deleteInvoiceItem(item.id)"
+                @click="deleteTaskItem(item.id)"
                 src="@/assets/icon-delete.svg"
                 alt=""
               />
             </tr>
           </table>
 
-          <div @click="addNewInvoiceItem" class="flex button">
+          <div @click="addNewTaskItem" class="flex button">
             <img src="@/assets/icon-plus.svg" alt="" />
             Add New Item
           </div>
@@ -176,7 +176,7 @@
 
       <div class="save flex">
         <div class="left">
-          <button type="button" @click="closeInvoice" class="red">
+          <button type="button" @click="closeTask" class="red">
             Cancel
           </button>
         </div>
@@ -192,13 +192,13 @@
           <button
             v-if="!editTask"
             type="submit"
-            @click="publishInvoice"
+            @click="publishTask"
             class="purple"
           >
-            Create Invoice
+            Create Task
           </button>
           <button v-if="editTask" type="submit" class="purple">
-            Update Invoice
+            Update Task
           </button>
         </div>
       </div>
@@ -230,16 +230,16 @@ export default {
       clientCity: null,
       clientZipCode: null,
       clientCountry: null,
-      invoiceDateUnix: null,
-      invoiceDate: null,
+      taskDateUnix: null,
+      taskDate: null,
       paymentTerms: null,
       paymentDueDateUnix: null,
       paymentDueDate: null,
       productDescription: null,
-      invoicePending: null,
-      invoiceDraft: null,
-      invoiceItemList: [],
-      invoiceTotal: 0,
+      taskPending: null,
+      taskDraft: null,
+      taskItemList: [],
+      taskTotal: 0,
     };
   },
   components: {
@@ -248,8 +248,8 @@ export default {
   created() {
     if (!this.editTask) {
       // get current date
-      this.invoiceDateUnix = Date.now();
-      this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleString(
+      this.taskDateUnix = Date.now();
+      this.taskDate = new Date(this.taskDateUnix).toLocaleString(
         "en-us",
         this.dateOptions
       );
@@ -268,16 +268,16 @@ export default {
       this.clientCity = currentTask.clientCity;
       this.clientZipCode = currentTask.clientZipCode;
       this.clientCountry = currentTask.clientCountry;
-      this.invoiceDateUnix = currentTask.invoiceDateUnix;
-      this.invoiceDate = currentTask.invoiceDate;
+      this.taskDateUnix = currentTask.taskDateUnix;
+      this.taskDate = currentTask.taskDate;
       this.paymentTerms = currentTask.paymentTerms;
       this.paymentDueDateUnix = currentTask.paymentDueDateUnix;
       this.paymentDueDate = currentTask.paymentDueDate;
       this.productDescription = currentTask.productDescription;
-      this.invoicePending = currentTask.invoicePending;
-      this.invoiceDraft = currentTask.invoiceDraft;
-      this.invoiceItemList = currentTask.invoiceItemList;
-      this.invoiceTotal = currentTask.invoiceTotal;
+      this.taskPending = currentTask.taskPending;
+      this.taskDraft = currentTask.taskDraft;
+      this.taskItemList = currentTask.taskItemList;
+      this.taskTotal = currentTask.taskTotal;
     }
   },
   methods: {
@@ -285,20 +285,20 @@ export default {
     ...mapActions(["UPDATE_TASK", "GET_TASKS"]),
 
     checkClick(e) {
-      if (e.target === this.$refs.invoiceWrap) {
+      if (e.target === this.$refs.taskWrap) {
         this.TOGGLE_EXIT();
       }
     },
 
-    closeInvoice() {
+    closeTask() {
       this.TOGGLE_TASK();
 
       if (this.editTask) {
         this.TOGGLE_EDIT_TASK();
       }
     },
-    addNewInvoiceItem() {
-      this.invoiceItemList.push({
+    addNewTaskItem() {
+      this.taskItemList.push({
         id: uid(),
         itemName: "",
         qty: "",
@@ -306,27 +306,27 @@ export default {
         total: 0,
       });
     },
-    deleteInvoiceItem(id) {
-      this.invoiceItemList = this.invoiceItemList.filter(
+    deleteTaskItem(id) {
+      this.taskItemList = this.taskItemList.filter(
         (item) => item.id !== id
       );
     },
     calculateTotal() {
-      this.invoiceTotal = 0;
-      this.invoiceItemList.forEach((item) => {
-        this.invoiceTotal += item.total;
+      this.taskTotal = 0;
+      this.taskItemList.forEach((item) => {
+        this.taskTotal += item.total;
       });
     },
 
-    publishInvoice() {
-      this.invoicePending = true;
+    publishTask() {
+      this.taskPending = true;
     },
     saveDraft() {
-      this.invoiceDraft = true;
+      this.taskDraft = true;
     },
 
-    async uploadInvoice() {
-      if (this.invoiceItemList.length <= 0) {
+    async uploadTask() {
+      if (this.taskItemList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -338,7 +338,7 @@ export default {
       const dataBase = db.collection("tasks").doc();
 
       await dataBase.set({
-        invoiceID: uid(6),
+        taskID: uid(6),
 
         billerStreetAddress: this.billerStreetAddress,
         billerCity: this.billerCity,
@@ -350,26 +350,26 @@ export default {
         clientCity: this.clientCity,
         clientZipCode: this.clientZipCode,
         clientCountry: this.clientCountry,
-        invoiceDateUnix: this.invoiceDateUnix,
-        invoiceDate: this.invoiceDate,
+        taskDateUnix: this.taskDateUnix,
+        taskDate: this.taskDate,
         paymentTerms: this.paymentTerms,
         paymentDueDateUnix: this.paymentDueDateUnix,
         paymentDueDate: this.paymentDueDate,
         productDescription: this.productDescription,
-        invoicePending: this.invoicePending,
-        invoiceDraft: this.invoiceDraft,
-        invoiceItemList: this.invoiceItemList,
-        invoiceTotal: this.invoiceTotal,
+        taskPending: this.taskPending,
+        taskDraft: this.taskDraft,
+        taskItemList: this.taskItemList,
+        taskTotal: this.taskTotal,
 
-        invoicePaid: null,
+        taskPaid: null,
       });
 
       this.loading = false;
       this.TOGGLE_TASK();
       this.GET_TASKS();
     },
-    async updateInvoice() {
-      if (this.invoiceItemList.length <= 0) {
+    async updateTask() {
+      if (this.taskItemList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -395,21 +395,21 @@ export default {
         paymentDueDateUnix: this.paymentDueDateUnix,
         paymentDueDate: this.paymentDueDate,
         productDescription: this.productDescription,
-        invoiceItemList: this.invoiceItemList,
-        invoiceTotal: this.invoiceTotal,
+        taskItemList: this.taskItemList,
+        taskTotal: this.taskTotal,
       });
 
       this.loading = false;
 
-      const data = {docID: this.docID, routeID: this.$route.params.invoiceID};
+      const data = {docID: this.docID, routeID: this.$route.params.taskID};
       this.UPDATE_TASK(data);
     },
     submitForm() {
       if (this.editTask) {
-        this.updateInvoice();
+        this.updateTask();
         return;
       }
-      this.uploadInvoice();
+      this.uploadTask();
     },
   },
   computed: {
@@ -431,20 +431,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.invoice-wrap {
+.task-wrap {
   position: fixed;
-  top: 0;
+  top: 78px;
   left: 0;
   background-color: transparent;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 78px);
 
   overflow: scroll;
   &::-webkit-scrollbar {
     display: none;
   }
 
-  .invoice-content {
+  .task-content {
     position: relative;
     padding: 56px;
     max-width: 700px;
@@ -484,8 +484,8 @@ export default {
       }
     }
 
-    // Invoice work
-    .invoice-work {
+    // task work
+    .task-work {
       .payment {
         gap: 24px;
         div {

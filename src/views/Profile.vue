@@ -35,6 +35,11 @@
         <button type="submit" class="purple">Update Profile</button>
       </div>
     </form>
+
+    <div v-if="groupJoined" class="group-code flex flex-column">
+      <button @click="getGroupCode" class="orange">Get Group Code!</button>
+      <span>{{ groupCode }}</span>
+    </div>
   </div>
 </template>
 
@@ -49,10 +54,12 @@ export default {
       lastName: null,
       emailAddress: null,
       userID: null,
+
+      groupCode: null,
     };
   },
   methods: {
-    ...mapActions(["GET_USER_DATA", "UPDATE_USER_DATA"]),
+    ...mapActions(["GET_USER_DATA", "UPDATE_USER_DATA", "GET_CODE"]),
 
     async getData() {
       await this.GET_USER_DATA();
@@ -70,19 +77,26 @@ export default {
 
       this.$router.push({ name: "Home" });
     },
+    async getGroupCode() {
+      this.groupCode = await this.GET_CODE();
+    },
   },
   created() {
     this.getData();
   },
   computed: {
-    ...mapState(["userProfile"]),
+    ...mapState(["userProfile", "groupJoined"]),
   },
 };
 </script>
 
 <style lang="scss" scoped>
 * {
-    color: white;
+  color: white;
+}
+
+button {
+  margin-right: 0;
 }
 
 .nav-link {
@@ -104,6 +118,20 @@ export default {
 
   h1 {
     margin-top: 32px;
+  }
+
+  .group-code {
+    margin-top: 16px;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      font-size: 16px;
+    }
+
+    span {
+      font-size: 24px;
+    }
   }
 }
 

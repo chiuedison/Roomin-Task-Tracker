@@ -28,7 +28,7 @@ import { onBeforeMount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import { auth } from "./firebase/firebaseInit.js";
-import { mapState, mapActions } from "vuex";
+import { mapState, mapActions, mapMutations } from "vuex";
 
 import NavBar from "./components/NavBar.vue";
 import TaskModal from "./components/TaskModal.vue";
@@ -56,18 +56,20 @@ export default {
         if (!user) {
           router.replace("/login");
         } else if (route.path == "/login" || route.path == "/register") {
-            router.replace("/");
+          router.replace("/");
         }
       });
     });
   },
   created() {
     this.GET_TASKS();
+    this.CHECK_LOGIN();
     this.checkDevice();
     window.addEventListener("resize", this.checkDevice);
   },
   methods: {
     ...mapActions(["GET_TASKS", "GET_USER_DATA"]),
+    ...mapMutations(["CHECK_LOGIN"]),
 
     checkDevice() {
       const windowWidth = window.innerWidth;

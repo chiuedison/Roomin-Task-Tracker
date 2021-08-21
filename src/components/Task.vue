@@ -1,26 +1,26 @@
 <template>
   <router-link
     class="task flex"
-    :to="{ name: 'Task', params: { invoiceID: task.invoiceID } }"
+    :to="{ name: 'Task', params: { taskID: task.taskID } }"
   >
     <div class="left flex">
-      <span class="tracking-number">#{{ task.invoiceID }}</span>
+      <span class="tracking-number">#{{ task.taskID }}</span>
       <span class="due-date">{{ task.paymentDueDate }}</span>
       <span class="person">{{ task.clientName }}</span>
     </div>
     <div class="right flex">
-      <span class="price">${{ task.invoiceTotal }}</span>
+      <span class="price">${{ task.taskTotal }}</span>
       <div
         class="status-button flex"
         :class="{
-          paid: task.invoicePaid,
-          draft: task.invoiceDraft,
-          pending: task.invoicePending,
+          paid: task.taskPaid,
+          draft: task.taskDraft,
+          pending: task.taskPending,
         }"
       >
-        <span v-if="task.invoicePaid">Paid</span>
-        <span v-if="task.invoiceDraft">Draft</span>
-        <span v-if="task.invoicePending">Pending</span>
+        <span v-if="task.taskPaid">Paid</span>
+        <span v-if="task.taskDraft">Draft</span>
+        <span v-if="task.taskPending">Pending</span>
       </div>
       <div class="icon">
         <img src="@/assets/icon-arrow-right.svg" alt="">

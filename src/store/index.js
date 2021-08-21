@@ -7,6 +7,7 @@ export default createStore({
   state: {
     userProfile: null,
     userLoaded: null,
+    loggedIn: null,
 
     groupJoined: null,
 
@@ -32,7 +33,7 @@ export default createStore({
     },
     SET_CURRENT_TASK(state, payload) {
       state.currentTaskArray = state.taskData.filter((task) => {
-        return task.invoiceID === payload;
+        return task.taskID === payload;
       });
     },
     TOGGLE_EDIT_TASK(state) {
@@ -44,17 +45,17 @@ export default createStore({
     UPDATE_STATUS_TO_PAID(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.invoicePaid = true;
-          task.invoicePending = false;
+          task.taskPaid = true;
+          task.taskPending = false;
         }
       });
     },
     UPDATE_STATUS_TO_PENDING(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.invoicePaid = false;
-          task.invoicePending = true;
-          task.invoiceDraft = false;
+          task.taskPaid = false;
+          task.taskPending = true;
+          task.taskDraft = false;
         }
       });
     },
@@ -66,6 +67,14 @@ export default createStore({
     USER_LOADED(state) {
       state.userLoaded = true;
     },
+    CHECK_LOGIN(state) {
+      const user = auth.currentUser;
+      if (user) {
+        state.loggedIn = true;
+      } else {
+        state.loggedIn = false;
+      }
+    },
 
     //************************************************************/
     //*********************** GROUP MUTATIONS ********************/
@@ -73,10 +82,17 @@ export default createStore({
 
     ADD_GROUP(state, payload) {
       state.userProfile.groupID = payload;
+      state.groupJoined = true;
     },
-
     JOINED_GROUP(state) {
       state.groupJoined = true;
+    },
+    GET_GROUP_STATUS(state) {
+      if (state.userProfile.groupID) {
+        state.groupJoined = true;
+        return;
+      }
+      state.groupJoined = false;
     },
   },
   actions: {
@@ -90,7 +106,7 @@ export default createStore({
           // searches for doc in taskData array, adds it into array if not found
           const data = {
             docID: doc.id,
-            invoiceID: doc.data().invoiceID,
+            taskID: doc.data().taskID,
 
             billerStreetAddress: doc.data().billerStreetAddress,
             billerCity: doc.data().billerCity,
@@ -102,17 +118,17 @@ export default createStore({
             clientCity: doc.data().clientCity,
             clientZipCode: doc.data().clientZipCode,
             clientCountry: doc.data().clientCountry,
-            invoiceDateUnix: doc.data().invoiceDateUnix,
-            invoiceDate: doc.data().invoiceDate,
+            taskDateUnix: doc.data().taskDateUnix,
+            taskDate: doc.data().taskDate,
             paymentTerms: doc.data().paymentTerms,
             paymentDueDateUnix: doc.data().paymentDueDateUnix,
             paymentDueDate: doc.data().paymentDueDate,
             productDescription: doc.data().productDescription,
-            invoicePending: doc.data().invoicePending,
-            invoiceDraft: doc.data().invoiceDraft,
-            invoiceItemList: doc.data().invoiceItemList,
-            invoiceTotal: doc.data().invoiceTotal,
-            invoicePaid: doc.data().invoicePaid,
+            taskPending: doc.data().taskPending,
+            taskDraft: doc.data().taskDraft,
+            taskItemList: doc.data().taskItemList,
+            taskTotal: doc.data().taskTotal,
+            taskPaid: doc.data().taskPaid,
           };
 
           commit("SET_TASK_DATA", data);
@@ -141,8 +157,8 @@ export default createStore({
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        invoicePaid: true,
-        invoicePending: false,
+        taskPaid: true,
+        taskPending: false,
       });
 
       // front-end updates
@@ -153,9 +169,9 @@ export default createStore({
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        invoicePaid: false,
-        invoicePending: true,
-        invoiceDraft: false,
+        taskPaid: false,
+        taskPending: true,
+        taskDraft: false,
       });
 
       // front-end updates
@@ -167,6 +183,8 @@ export default createStore({
     //************************************************************/
 
     async GET_USER_DATA({ commit, state }) {
+      state.groupJoined = false;
+
       const user = auth.currentUser;
       const getUsers = db.collection("users");
       const results = await getUsers.get();
@@ -186,10 +204,8 @@ export default createStore({
         });
       }
 
+      commit("GET_GROUP_STATUS");
       commit("USER_LOADED");
-      if (state.userProfile.groupID) {
-        commit("JOINED_GROUP");
-      }
     },
     async UPDATE_USER_DATA({ state }, payload) {
       state.userProfile.firstName = payload.firstName;
@@ -240,7 +256,7 @@ export default createStore({
           userDoc.update({
             groupID: doc.id,
           });
-          
+
           // front-end updates
           commit("ADD_GROUP", doc.id);
 
@@ -255,6 +271,13 @@ export default createStore({
           state.groupJoined = true;
         }
       });
+    },
+
+    async GET_CODE({ state }) {
+      const id = state.userProfile.groupID;
+      let groupDoc = db.collection("groups").doc(id);
+
+      return groupDoc.get().then((doc) => doc.data().access_code);
     },
   },
   modules: {},

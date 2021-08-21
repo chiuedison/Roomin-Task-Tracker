@@ -1,42 +1,61 @@
 <template>
-  <div v-if="userLoaded && userProfile.groupID" class="home container">
-    <h1 class="hello">Hello, {{ userProfile.firstName }}</h1>
-    <div class="header flex">
-      <div class="left flex flex-column">
-        <h1>Tasks</h1>
-        <span>There are {{ taskData.length }} total tasks</span>
-      </div>
-      <div class="right flex">
-        <div @click="toggleFilterMenu" class="filter flex">
-          <span
-            >Filter by status<span v-if="filteredTask"
-              >: {{ filteredTask }}</span
-            ></span
-          >
-          <img src="@/assets/icon-arrow-down.svg" alt="" />
-          <ul v-show="filterMenu" class="filter-menu">
-            <li @click="filteredTasks">Draft</li>
-            <li @click="filteredTasks">Pending</li>
-            <li @click="filteredTasks">Paid</li>
-            <li @click="filteredTasks">Clear Filter</li>
-          </ul>
-        </div>
-        <div @click="newInvoice" class="button flex">
-          <div class="inner-button flex">
-            <img src="@/assets/icon-plus.svg" alt="" />
+  <div v-if="userLoaded && groupLoaded" class="home container">
+    <div>
+      <div v-if="groupJoined" class="group-view">
+        <h1 class="hello">Hello, {{ userProfile.firstName }}.</h1>
+        <div class="header flex">
+          <div class="left flex flex-column">
+            <h1>Tasks</h1>
+            <span v-if="taskData.length > 1"
+              >There are {{ taskData.length }} total tasks.</span
+            >
+            <span v-if="taskData.length === 1"
+              >There is {{ taskData.length }} total task.</span
+            >
           </div>
-          <span>New Task</span>
+          <div class="right flex">
+            <div @click="toggleFilterMenu" class="filter flex">
+              <span
+                >Filter by status<span v-if="filteredTask"
+                  >: {{ filteredTask }}</span
+                ></span
+              >
+              <img src="@/assets/icon-arrow-down.svg" alt="" />
+              <ul v-show="filterMenu" class="filter-menu">
+                <li @click="filteredTasks">Draft</li>
+                <li @click="filteredTasks">Pending</li>
+                <li @click="filteredTasks">Paid</li>
+                <li @click="filteredTasks">Clear Filter</li>
+              </ul>
+            </div>
+            <div @click="newTask" class="button flex">
+              <div class="inner-button flex">
+                <img src="@/assets/icon-plus.svg" alt="" />
+              </div>
+              <span>New Task</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="taskData.length > 0">
+          <Task
+            v-for="(task, index) in filteredData"
+            :key="index"
+            :task="task"
+          />
+        </div>
+        <div v-else class="empty flex flex-column">
+          <img src="@/assets/illustration-empty.svg" alt="" />
+          <h3>There is nothing here</h3>
+          <p>
+            Create a new task by clicking the New Task button and get started
+          </p>
         </div>
       </div>
-    </div>
-
-    <div v-if="taskData.length > 0">
-      <Task v-for="(task, index) in filteredData" :key="index" :task="task" />
-    </div>
-    <div v-else class="empty flex flex-column">
-      <img src="@/assets/illustration-empty.svg" alt="" />
-      <h3>There is nothing here</h3>
-      <p>Create a new task by clicking the New Task button and get started</p>
+      <div v-else class="no-group-view">
+        <h1 class="hello">Hello, {{ userProfile.firstName }}.</h1>
+        <Groups />
+      </div>
     </div>
   </div>
 </template>
@@ -44,6 +63,7 @@
 <script>
 import { mapMutations, mapActions, mapState } from "vuex";
 import Task from "../components/Task.vue";
+import Groups from "../components/Groups.vue";
 
 export default {
   name: "Home",
@@ -52,16 +72,19 @@ export default {
       filterMenu: null,
       filteredTask: null,
       username: null,
+
+      groupLoaded: null,
     };
   },
   components: {
     Task,
+    Groups,
   },
   methods: {
-    ...mapMutations(["TOGGLE_TASK"]),
+    ...mapMutations(["TOGGLE_TASK", "CHECK_LOGIN", "GET_GROUP_STATUS"]),
     ...mapActions(["GET_USER_DATA"]),
 
-    newInvoice() {
+    newTask() {
       this.TOGGLE_TASK();
     },
     toggleFilterMenu() {
@@ -76,12 +99,12 @@ export default {
     },
 
     async checkGroups() {
-      await this.GET_USER_DATA();
+      this.groupLoaded = false;
 
+      await this.GET_USER_DATA();
       console.log(this.userProfile.groupID);
-      if (!this.userProfile.groupID) {
-        this.$router.push("Groups");
-      }
+
+      this.groupLoaded = true;
     },
   },
   computed: {
@@ -90,13 +113,13 @@ export default {
     filteredData() {
       return this.taskData.filter((task) => {
         if (this.filteredTask === "Draft") {
-          return task.invoiceDraft === true;
+          return task.taskDraft === true;
         }
         if (this.filteredTask === "Pending") {
-          return task.invoicePending === true;
+          return task.taskPending === true;
         }
         if (this.filteredTask === "Paid") {
-          return task.invoicePaid === true;
+          return task.taskPaid === true;
         }
         return task;
       });
@@ -104,6 +127,7 @@ export default {
   },
   created() {
     this.checkGroups();
+    this.CHECK_LOGIN();
   },
 };
 </script>
@@ -113,7 +137,7 @@ export default {
   color: white;
 
   .hello {
-    width: 100vw;
+    width: 100%;
     margin-bottom: 16px;
   }
 

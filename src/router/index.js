@@ -4,7 +4,6 @@ import TaskView from "../views/TaskView.vue";
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
 import Profile from "../views/Profile.vue";
-import Groups from "../views/Groups.vue";
 
 const routes = [
   {
@@ -13,7 +12,7 @@ const routes = [
     component: Home,
   },
   {
-    path: "/task/:invoiceID",
+    path: "/task/:taskID",
     name: "Task",
     component: TaskView,
   },
@@ -31,11 +30,6 @@ const routes = [
     path: "/profile",
     name: "Profile",
     component: Profile,
-  },
-  {
-    path: "/groups",
-    name: "Groups",
-    component: Groups,
   },
 ];
 

@@ -1,9 +1,9 @@
 <template>
   <div class="groups-wrapper flex flex-column">
-    <h1>Create or Join a Group!</h1>
+    <h1>Create or Join a Group to get started!</h1>
     <div class="groups flex">
       <div class="input flex flex-column">
-        <label for="join-group" style="color: white">Join Group</label>
+        <label for="join-group" style="color: white">Join Group using access code</label>
         <input
           type="text"
           id="join-group"

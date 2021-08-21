@@ -15,6 +15,7 @@
 <script>
 import { ref } from "vue";
 import { auth } from "../firebase/firebaseInit.js";
+import { mapMutations } from "vuex";
 
 export default {
   name: "Login",
@@ -26,8 +27,8 @@ export default {
     const userLogin = () => {
       auth
         .signInWithEmailAndPassword(email.value, password.value)
-        .then(data => console.log(data))
-        .catch(err => alert(err.message));
+        .then((data) => console.log(data))
+        .catch((err) => alert(err.message));
     };
 
     return {
@@ -35,6 +36,12 @@ export default {
       email,
       password,
     };
+  },
+  methods: {
+    ...mapMutations(["CHECK_LOGIN"]),
+  },
+  created() {
+    this.CHECK_LOGIN();
   },
 };
 </script>
