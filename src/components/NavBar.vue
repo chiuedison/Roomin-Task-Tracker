@@ -8,7 +8,7 @@
         <h4>Profile</h4>
       </router-link>
       <div @click="Logout" class="logout">
-        <h4 >Logout {{ name }}</h4>
+        <h4 >Logout</h4>
       </div>
     </div>
   </header>

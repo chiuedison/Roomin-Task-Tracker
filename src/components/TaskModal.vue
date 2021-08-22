@@ -207,6 +207,7 @@
 </template>
 
 <script>
+import firebase from "firebase";
 import { db } from "../firebase/firebaseInit";
 import Loading from "../components/Loading.vue";
 import { mapActions, mapMutations, mapState } from "vuex";
@@ -364,6 +365,14 @@ export default {
         taskPaid: null,
       });
 
+      console.log(this.userProfile.groupID)
+      const groupDoc = db.collection("groups").doc(this.userProfile.groupID);
+          groupDoc.update({
+            tasks: firebase.firestore.FieldValue.arrayUnion(
+              dataBase.id
+            ),
+          });
+
       this.loading = false;
       this.TOGGLE_TASK();
       this.GET_TASKS();
@@ -413,7 +422,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(["editTask", "currentTaskArray"]),
+    ...mapState(["editTask", "currentTaskArray", "userProfile"]),
   },
   watch: {
     paymentTerms() {

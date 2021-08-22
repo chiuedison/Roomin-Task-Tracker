@@ -1,5 +1,5 @@
 <template>
-  <div v-if="tasksLoaded">
+  <div v-if="true">
     <div v-if="!mobile" class="app flex flex-column">
       <NavBar />
       <div class="app-content flex flex-column">
@@ -62,8 +62,9 @@ export default {
     });
   },
   created() {
-    this.GET_TASKS();
-    this.CHECK_LOGIN();
+    //this.GET_TASKS();
+    //this.CHECK_LOGIN();
+
     this.checkDevice();
     window.addEventListener("resize", this.checkDevice);
   },

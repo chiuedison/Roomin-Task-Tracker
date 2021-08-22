@@ -2,6 +2,7 @@ import { createStore } from "vuex";
 import { db, auth } from "../firebase/firebaseInit";
 import firebase from "firebase/app";
 import { uid } from "uid";
+//import router from "@/router";
 
 export default createStore({
   state: {
@@ -10,6 +11,7 @@ export default createStore({
     loggedIn: null,
 
     groupJoined: null,
+    groupLoaded: null,
 
     taskData: [],
     taskModal: null,
@@ -90,50 +92,72 @@ export default createStore({
     GET_GROUP_STATUS(state) {
       if (state.userProfile.groupID) {
         state.groupJoined = true;
-        return;
+      } else {
+        state.groupJoined = false;
       }
-      state.groupJoined = false;
+
+      state.groupLoaded = true;
     },
   },
   actions: {
-    async GET_TASKS({ commit, state }) {
+    async GET_TASKS({ dispatch, commit, state }) {
       const getData = db.collection("tasks");
       const results = await getData.get();
 
-      results.forEach((doc) => {
-        // loops through each doc in firebase
-        if (!state.taskData.some((task) => task.docID === doc.id)) {
-          // searches for doc in taskData array, adds it into array if not found
-          const data = {
-            docID: doc.id,
-            taskID: doc.data().taskID,
+      do {
+        console.log("waiting on auth...");
+      } while (!auth.currentUser);
 
-            billerStreetAddress: doc.data().billerStreetAddress,
-            billerCity: doc.data().billerCity,
-            billerZipCode: doc.data().billerZipCode,
-            billerCountry: doc.data().billerCountry,
-            clientName: doc.data().clientName,
-            clientEmail: doc.data().clientEmail,
-            clientStreetAddress: doc.data().clientStreetAddress,
-            clientCity: doc.data().clientCity,
-            clientZipCode: doc.data().clientZipCode,
-            clientCountry: doc.data().clientCountry,
-            taskDateUnix: doc.data().taskDateUnix,
-            taskDate: doc.data().taskDate,
-            paymentTerms: doc.data().paymentTerms,
-            paymentDueDateUnix: doc.data().paymentDueDateUnix,
-            paymentDueDate: doc.data().paymentDueDate,
-            productDescription: doc.data().productDescription,
-            taskPending: doc.data().taskPending,
-            taskDraft: doc.data().taskDraft,
-            taskItemList: doc.data().taskItemList,
-            taskTotal: doc.data().taskTotal,
-            taskPaid: doc.data().taskPaid,
-          };
+      commit("CHECK_LOGIN");
+      await dispatch("GET_USER_DATA");
 
-          commit("SET_TASK_DATA", data);
-        }
-      });
+      if (state.userProfile.groupID) {
+        const groupDoc = await db
+          .collection("groups")
+          .doc(state.userProfile.groupID)
+          .get();
+        const taskArray = groupDoc.data().tasks;
+
+        taskArray.forEach((groupTaskID) => {
+          // loops through each doc in tasks collection
+          results.forEach((doc) => {
+            // searches for matching task
+            if (groupTaskID == doc.id) {
+              // searches for doc in taskData array, adds it into array if not found
+              if (!state.taskData.some((task) => task.docID === doc.id)) {
+                const data = {
+                  docID: doc.id,
+                  taskID: doc.data().taskID,
+
+                  billerStreetAddress: doc.data().billerStreetAddress,
+                  billerCity: doc.data().billerCity,
+                  billerZipCode: doc.data().billerZipCode,
+                  billerCountry: doc.data().billerCountry,
+                  clientName: doc.data().clientName,
+                  clientEmail: doc.data().clientEmail,
+                  clientStreetAddress: doc.data().clientStreetAddress,
+                  clientCity: doc.data().clientCity,
+                  clientZipCode: doc.data().clientZipCode,
+                  clientCountry: doc.data().clientCountry,
+                  taskDateUnix: doc.data().taskDateUnix,
+                  taskDate: doc.data().taskDate,
+                  paymentTerms: doc.data().paymentTerms,
+                  paymentDueDateUnix: doc.data().paymentDueDateUnix,
+                  paymentDueDate: doc.data().paymentDueDate,
+                  productDescription: doc.data().productDescription,
+                  taskPending: doc.data().taskPending,
+                  taskDraft: doc.data().taskDraft,
+                  taskItemList: doc.data().taskItemList,
+                  taskTotal: doc.data().taskTotal,
+                  taskPaid: doc.data().taskPaid,
+                };
+
+                commit("SET_TASK_DATA", data);
+              }
+            }
+          });
+        });
+      }
 
       commit("TASKS_LOADED");
     },
@@ -147,9 +171,17 @@ export default createStore({
       commit("SET_CURRENT_TASK", routeID);
     },
 
-    async DELETE_TASK({ commit }, docID) {
+    async DELETE_TASK({ commit, state }, docID) {
+      // back-end
       const getTask = db.collection("tasks").doc(docID);
       await getTask.delete();
+
+      const groupDoc = db.collection("groups").doc(state.userProfile.groupID);
+      groupDoc.update({
+        tasks: firebase.firestore.FieldValue.arrayRemove(docID),
+      });
+
+      // front-end
       commit("DELETE_TASK", docID);
     },
 
@@ -183,7 +215,7 @@ export default createStore({
     //************************************************************/
 
     async GET_USER_DATA({ commit, state }) {
-      state.groupJoined = false;
+      //state.groupJoined = false;
 
       const user = auth.currentUser;
       const getUsers = db.collection("users");
@@ -202,9 +234,9 @@ export default createStore({
             };
           }
         });
+        commit("GET_GROUP_STATUS");
       }
 
-      commit("GET_GROUP_STATUS");
       commit("USER_LOADED");
     },
     async UPDATE_USER_DATA({ state }, payload) {

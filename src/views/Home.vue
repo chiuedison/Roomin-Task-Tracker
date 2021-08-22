@@ -1,5 +1,5 @@
 <template>
-  <div v-if="userLoaded && groupLoaded" class="home container">
+  <div v-if="tasksLoaded && userLoaded && groupLoaded" class="home container">
     <div>
       <div v-if="groupJoined" class="group-view">
         <h1 class="hello">Hello, {{ userProfile.firstName }}.</h1>
@@ -58,12 +58,16 @@
       </div>
     </div>
   </div>
+  <div v-else>
+    <Loading />
+  </div>
 </template>
 
 <script>
 import { mapMutations, mapActions, mapState } from "vuex";
 import Task from "../components/Task.vue";
 import Groups from "../components/Groups.vue";
+import Loading from "../components/Loading.vue";
 
 export default {
   name: "Home",
@@ -72,17 +76,16 @@ export default {
       filterMenu: null,
       filteredTask: null,
       username: null,
-
-      groupLoaded: null,
     };
   },
   components: {
     Task,
     Groups,
+    Loading,
   },
   methods: {
     ...mapMutations(["TOGGLE_TASK", "CHECK_LOGIN", "GET_GROUP_STATUS"]),
-    ...mapActions(["GET_USER_DATA"]),
+    ...mapActions(["GET_USER_DATA", "GET_TASKS"]),
 
     newTask() {
       this.TOGGLE_TASK();
@@ -99,16 +102,19 @@ export default {
     },
 
     async checkGroups() {
-      this.groupLoaded = false;
-
-      await this.GET_USER_DATA();
+      //await this.GET_USER_DATA();
       console.log(this.userProfile.groupID);
-
-      this.groupLoaded = true;
     },
   },
   computed: {
-    ...mapState(["taskData", "userProfile", "userLoaded", "groupJoined"]),
+    ...mapState([
+      "taskData",
+      "tasksLoaded",
+      "userProfile",
+      "userLoaded",
+      "groupJoined",
+      "groupLoaded",
+    ]),
 
     filteredData() {
       return this.taskData.filter((task) => {
@@ -126,8 +132,9 @@ export default {
     },
   },
   created() {
-    this.checkGroups();
-    this.CHECK_LOGIN();
+    this.GET_TASKS();
+    //this.CHECK_LOGIN();
+    //this.checkGroups();
   },
 };
 </script>
