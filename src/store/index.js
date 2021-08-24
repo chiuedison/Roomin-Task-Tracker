@@ -129,7 +129,7 @@ export default createStore({
                   docID: doc.id,
                   taskID: doc.data().taskID,
 
-                  billerStreetAddress: doc.data().billerStreetAddress,
+                  taskName: doc.data().taskName,
                   billerCity: doc.data().billerCity,
                   billerZipCode: doc.data().billerZipCode,
                   billerCountry: doc.data().billerCountry,

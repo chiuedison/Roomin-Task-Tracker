@@ -6,14 +6,14 @@
       <h1 v-else>Edit Task</h1>
 
       <div class="bill-from flex flex-column">
-        <h4>Bill From</h4>
+        <h4>Task Information</h4>
         <div class="input flex flex-column">
-          <label for="biller-street-address">Street Address</label>
+          <label for="task-name">Task Name</label>
           <input
             required
             type="text"
-            id="biller-street-address"
-            v-model="billerStreetAddress"
+            id="task-name"
+            v-model="taskName"
           />
         </div>
         <div class="location-details flex">
@@ -211,7 +211,7 @@ export default {
       loading: null,
       docID: null,
 
-      billerStreetAddress: null,
+      taskName: null,
       billerCity: null,
       billerZipCode: null,
       billerCountry: null,
@@ -253,7 +253,7 @@ export default {
     if (this.editTask) {
       const currentTask = this.currentTaskArray[0];
       this.docID = currentTask.docID;
-      this.billerStreetAddress = currentTask.billerStreetAddress;
+      this.taskName = currentTask.taskName;
       this.billerCity = currentTask.billerCity;
       this.billerZipCode = currentTask.billerZipCode;
       this.billerCountry = currentTask.billerCountry;
@@ -337,7 +337,7 @@ export default {
       await dataBase.set({
         taskID: uid(6),
 
-        billerStreetAddress: this.billerStreetAddress,
+        taskName: this.taskName,
         billerCity: this.billerCity,
         billerZipCode: this.billerZipCode,
         billerCountry: this.billerCountry,
@@ -385,7 +385,7 @@ export default {
       const dataBase = db.collection("tasks").doc(this.docID);
 
       await dataBase.update({
-        billerStreetAddress: this.billerStreetAddress,
+        taskName: this.taskName,
         billerCity: this.billerCity,
         billerZipCode: this.billerZipCode,
         billerCountry: this.billerCountry,

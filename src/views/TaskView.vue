@@ -46,11 +46,11 @@
     <div class="task-details flex flex-column">
       <div class="top flex">
         <div class="left flex flex-column">
-          <p><span>#</span>{{ currentTask.taskID }}</p>
+          <p>{{ currentTask.taskName }}</p>
           <p>{{ currentTask.productDescription }}</p>
         </div>
         <div class="right flex flex-column">
-          <p>{{ currentTask.billerStreetAddress }}</p>
+          <p><span>#</span>{{ currentTask.taskID }}</p>
           <p>{{ currentTask.billerCity }}</p>
           <p>{{ currentTask.billerZipCode }}</p>
           <p>{{ currentTask.billerCountry }}</p>
