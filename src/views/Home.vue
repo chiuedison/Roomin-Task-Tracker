@@ -5,7 +5,6 @@
         <h1 class="hello">Hello, {{ userProfile.firstName }}.</h1>
         <div class="header flex">
           <div class="left flex flex-column">
-            <h1>Tasks</h1>
             <span v-if="taskData.length > 1"
               >There are {{ taskData.length }} total tasks.</span
             >
@@ -37,7 +36,8 @@
           </div>
         </div>
 
-        <div v-if="taskData.length > 0">
+        <div class="all-tasks" v-if="taskData.length > 0">
+          <h2>All Tasks</h2>
           <Task
             v-for="(task, index) in filteredData"
             :key="index"
@@ -221,6 +221,12 @@ export default {
           }
         }
       }
+    }
+  }
+
+  .all-tasks {
+    h2 {
+      margin-bottom: 16px;
     }
   }
 
