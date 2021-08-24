@@ -24,7 +24,7 @@
               <ul v-show="filterMenu" class="filter-menu">
                 <li @click="filteredTasks">Draft</li>
                 <li @click="filteredTasks">Pending</li>
-                <li @click="filteredTasks">Paid</li>
+                <li @click="filteredTasks">Completed</li>
                 <li @click="filteredTasks">Clear Filter</li>
               </ul>
             </div>
@@ -124,8 +124,8 @@ export default {
         if (this.filteredTask === "Pending") {
           return task.taskPending === true;
         }
-        if (this.filteredTask === "Paid") {
-          return task.taskPaid === true;
+        if (this.filteredTask === "Complete") {
+          return task.taskComplete === true;
         }
         return task;
       });

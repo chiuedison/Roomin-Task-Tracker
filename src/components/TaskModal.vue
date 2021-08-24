@@ -6,7 +6,7 @@
       <h1 v-else>Edit Task</h1>
 
       <div class="task-info flex flex-column">
-        <h4>Task Information</h4>
+        <h3>Task Information</h3>
         <div class="input flex flex-column">
           <label for="task-name">Task Name</label>
           <input required type="text" id="task-name" v-model="taskName" />
@@ -70,21 +70,21 @@
           </select>
         </div> -->
         <div class="work-items">
-          <h3>Item List</h3>
+          <h3>Costs</h3>
           <table class="item-list">
             <tr class="table-heading flex">
-              <th class="item-name">Item Name</th>
+              <th class="cost-name">Cost Name</th>
               <th class="qty">Qty</th>
               <th class="price">Price</th>
               <th class="total">Total</th>
             </tr>
             <tr
               class="table-items flex"
-              v-for="(item, index) in taskItemList"
+              v-for="(item, index) in taskCostList"
               :key="index"
             >
-              <td class="item-name">
-                <input type="text" id="" v-model="item.itemName" />
+              <td class="cost-name">
+                <input type="text" id="" v-model="item.costName" />
               </td>
               <td class="qty">
                 <input type="text" id="" v-model="item.qty" />
@@ -105,7 +105,7 @@
 
           <div @click="addNewTaskItem" class="flex button">
             <img src="@/assets/icon-plus.svg" alt="" />
-            Add New Item
+            Add New Cost
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ export default {
       //paymentTerms: null,
       taskPending: null,
       taskDraft: null,
-      taskItemList: [],
+      taskCostList: [],
       taskTotal: 0,
 
       taskDueDateUnix: null,
@@ -214,7 +214,7 @@ export default {
       this.taskDueDate = currentTask.taskDueDate;
       this.taskPending = currentTask.taskPending;
       this.taskDraft = currentTask.taskDraft;
-      this.taskItemList = currentTask.taskItemList;
+      this.taskCostList = currentTask.taskCostList;
       this.taskTotal = currentTask.taskTotal;
     }
 
@@ -258,20 +258,20 @@ export default {
       }
     },
     addNewTaskItem() {
-      this.taskItemList.push({
+      this.taskCostList.push({
         id: uid(),
-        itemName: "",
+        costName: "",
         qty: "",
         price: 0,
         total: 0,
       });
     },
     deleteTaskItem(id) {
-      this.taskItemList = this.taskItemList.filter((item) => item.id !== id);
+      this.taskCostList = this.taskCostList.filter((item) => item.id !== id);
     },
     calculateTotal() {
       this.taskTotal = 0;
-      this.taskItemList.forEach((item) => {
+      this.taskCostList.forEach((item) => {
         this.taskTotal += item.total;
       });
     },
@@ -281,10 +281,11 @@ export default {
     },
     saveDraft() {
       this.taskDraft = true;
+      console.log(this.taskPending);
     },
 
     async uploadTask() {
-      if (this.taskItemList.length <= 0) {
+      if (this.taskCostList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -311,10 +312,10 @@ export default {
         taskDueDate: this.taskDueDate,
         taskPending: this.taskPending,
         taskDraft: this.taskDraft,
-        taskItemList: this.taskItemList,
+        taskCostList: this.taskCostList,
         taskTotal: this.taskTotal,
 
-        taskPaid: null,
+        taskComplete: null,
       });
 
       console.log(this.userProfile.groupID);
@@ -328,7 +329,7 @@ export default {
       this.GET_TASKS();
     },
     async updateTask() {
-      if (this.taskItemList.length <= 0) {
+      if (this.taskCostList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -349,7 +350,7 @@ export default {
         taskDueDateUnix: this.taskDueDateUnix,
         taskDueDateCal: this.taskDueDateCal,
         taskDueDate: this.taskDueDate,
-        taskItemList: this.taskItemList,
+        taskCostList: this.taskCostList,
         taskTotal: this.taskTotal,
       });
 
@@ -456,10 +457,10 @@ export default {
 
         .assigned-to {
           flex: 2;
-        }
 
-        option:hover {
-          background-color: #7c5dfa;
+          option:hover {
+            box-shadow: 0 0 10px 100px #7c5dfa inset;
+          }
         }
       }
     }
@@ -483,7 +484,7 @@ export default {
             gap: 16px;
             font-size: 12px;
 
-            .item-name {
+            .cost-name {
               flex-basis: 50%;
             }
 

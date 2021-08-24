@@ -44,10 +44,10 @@ export default createStore({
     DELETE_TASK(state, payload) {
       state.taskData = state.taskData.filter((task) => task.docID !== payload);
     },
-    UPDATE_STATUS_TO_PAID(state, payload) {
+    UPDATE_STATUS_TO_COMPLETE(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.taskPaid = true;
+          task.taskComplete = true;
           task.taskPending = false;
         }
       });
@@ -55,7 +55,7 @@ export default createStore({
     UPDATE_STATUS_TO_PENDING(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.taskPaid = false;
+          task.taskComplete = false;
           task.taskPending = true;
           task.taskDraft = false;
         }
@@ -142,9 +142,9 @@ export default createStore({
                   taskDescription: doc.data().taskDescription,
                   taskPending: doc.data().taskPending,
                   taskDraft: doc.data().taskDraft,
-                  taskItemList: doc.data().taskItemList,
+                  taskCostList: doc.data().taskCostList,
                   taskTotal: doc.data().taskTotal,
-                  taskPaid: doc.data().taskPaid,
+                  taskComplete: doc.data().taskComplete,
                 };
 
                 commit("SET_TASK_DATA", data);
@@ -180,23 +180,23 @@ export default createStore({
       commit("DELETE_TASK", docID);
     },
 
-    async UPDATE_STATUS_TO_PAID({ commit }, docID) {
+    async UPDATE_STATUS_TO_COMPLETE({ commit }, docID) {
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        taskPaid: true,
+        taskComplete: true,
         taskPending: false,
       });
 
       // front-end updates
-      commit("UPDATE_STATUS_TO_PAID", docID);
+      commit("UPDATE_STATUS_TO_COMPLETE", docID);
     },
 
     async UPDATE_STATUS_TO_PENDING({ commit }, docID) {
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        taskPaid: false,
+        taskComplete: false,
         taskPending: true,
         taskDraft: false,
       });

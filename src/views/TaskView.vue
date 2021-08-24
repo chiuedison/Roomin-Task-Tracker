@@ -9,14 +9,14 @@
         <div
           class="status-button flex"
           :class="{
-            paid: currentTask.taskPaid,
+            complete: currentTask.taskComplete,
             draft: currentTask.taskDraft,
             pending: currentTask.taskPending,
           }"
         >
-          <span v-if="currentTask.taskPaid">Paid</span>
+          <span v-if="currentTask.taskComplete">Complete</span>
           <span v-if="currentTask.taskDraft">Draft</span>
-          <span v-if="currentTask.taskPending">Pending</span>
+          <span v-if="currentTask.taskPending">In Progress</span>
         </div>
       </div>
       <div class="right flex">
@@ -28,17 +28,17 @@
         </button>
         <button
           v-if="currentTask.taskPending"
-          @click="updateToPaid(currentTask.docID)"
+          @click="updateToComplete(currentTask.docID)"
           class="green"
         >
-          Mark as Paid
+          Mark as Complete
         </button>
         <button
-          v-if="currentTask.taskPaid || currentTask.taskDraft"
+          v-if="currentTask.taskComplete || currentTask.taskDraft"
           @click="updateToPending(currentTask.docID)"
           class="orange"
         >
-          Mark as Pending
+          Mark as Incomplete
         </button>
       </div>
     </div>
@@ -70,26 +70,26 @@
         </div>
       </div>
       <div class="bottom flex flex-column">
-        <div class="billing-items">
+        <div class="cost-items">
           <div class="heading flex">
-            <p>Item Name</p>
+            <p>Cost Name</p>
             <p>QTY</p>
             <p>Price</p>
             <p>Total</p>
           </div>
           <div
-            v-for="(item, index) in currentTask.taskItemList"
+            v-for="(item, index) in currentTask.taskCostList"
             :key="index"
             class="item flex"
           >
-            <p>{{ item.itemName }}</p>
+            <p>{{ item.costName }}</p>
             <p>{{ item.qty }}</p>
             <p>{{ item.price }}</p>
             <p>{{ item.total }}</p>
           </div>
         </div>
         <div class="total flex">
-          <p>Amount Due</p>
+          <p>Total Costs</p>
           <p>{{ currentTask.taskTotal }}</p>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default {
     ...mapActions([
       "DELETE_TASK",
       "UPDATE_STATUS_TO_PENDING",
-      "UPDATE_STATUS_TO_PAID",
+      "UPDATE_STATUS_TO_COMPLETE",
       "GET_TASKS",
     ]),
 
@@ -135,8 +135,8 @@ export default {
       await this.DELETE_TASK(docID);
       this.$router.push({ name: "Home" });
     },
-    updateToPaid(docID) {
-      this.UPDATE_STATUS_TO_PAID(docID);
+    updateToComplete(docID) {
+      this.UPDATE_STATUS_TO_COMPLETE(docID);
     },
     updateToPending(docID) {
       this.UPDATE_STATUS_TO_PENDING(docID);
@@ -266,7 +266,7 @@ export default {
     .bottom {
       margin-top: 50px;
 
-      .billing-items {
+      .cost-items {
         padding: 32px;
         border-radius: 20px 20px 0 0;
         background-color: #252945;

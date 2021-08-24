@@ -13,14 +13,14 @@
       <div
         class="status-button flex"
         :class="{
-          paid: task.taskPaid,
+          complete: task.taskComplete,
           draft: task.taskDraft,
           pending: task.taskPending,
         }"
       >
-        <span v-if="task.taskPaid">Paid</span>
+        <span v-if="task.taskComplete">Completed</span>
         <span v-if="task.taskDraft">Draft</span>
-        <span v-if="task.taskPending">Pending</span>
+        <span v-if="task.taskPending">In Progress</span>
       </div>
       <div class="icon">
         <img src="@/assets/icon-arrow-right.svg" alt="">

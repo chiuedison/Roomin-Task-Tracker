@@ -211,7 +211,7 @@ button,
   border-radius: 10px;
 }
 
-.paid {
+.complete {
   &::before {
     background-color: #33d69f;
   }
