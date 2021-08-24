@@ -235,14 +235,18 @@ button,
   background-color: rgba(223, 227, 250, 0.1);
 }
 
+.p-datepicker {
+  width: 280px;
+}
+
 .p-datepicker-group-container {
   background-color: white;
   border-radius: 10px;
   padding: 10px;
-}
 
-.p-datepicker {
-  width: 280px;
+  span {
+    padding: 2px 0;
+  }
 }
 
 .p-inputtext {

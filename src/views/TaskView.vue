@@ -47,33 +47,26 @@
       <div class="top flex">
         <div class="left flex flex-column">
           <p>{{ currentTask.taskName }}</p>
-          <p>{{ currentTask.productDescription }}</p>
+          <p>{{ currentTask.taskDescription }}</p>
         </div>
         <div class="right flex flex-column">
           <p><span>#</span>{{ currentTask.taskID }}</p>
-          <p>{{ currentTask.billerCity }}</p>
-          <p>{{ currentTask.billerZipCode }}</p>
-          <p>{{ currentTask.billerCountry }}</p>
+          <p>Created By:</p>
+          <p>{{ currentTask.createdBy }}</p>
         </div>
       </div>
       <div class="middle flex">
-        <div class="payment flex flex-column">
-          <h4>Task Date</h4>
+        <div class="flex flex-column">
+          <h4>Date Created</h4>
           <p>{{ currentTask.taskDate }}</p>
-          <h4>Payment Date</h4>
+        </div>
+        <div class="flex flex-column">
+          <h4>Complete By</h4>
           <p>{{ currentTask.taskDueDate }}</p>
         </div>
-        <div class="bill flex flex-column">
-          <h4>Bill To</h4>
-          <p>{{ currentTask.clientName }}</p>
-          <p>{{ currentTask.clientStreetAddress }}</p>
-          <p>{{ currentTask.clientCity }}</p>
-          <p>{{ currentTask.clientZipCode }}</p>
-          <p>{{ currentTask.clientCountry }}</p>
-        </div>
-        <div class="send-to flex flex-column">
-          <h4>Send To</h4>
-          <p>{{ currentTask.clientEmail }}</p>
+        <div class="flex assigned flex-column">
+          <h4>Assigned To</h4>
+          <p>{{ currentTask.assignedTo }}</p>
         </div>
       </div>
       <div class="bottom flex flex-column">
@@ -118,13 +111,18 @@ export default {
   },
   methods: {
     ...mapMutations(["SET_CURRENT_TASK", "TOGGLE_EDIT_TASK", "TOGGLE_TASK"]),
-    ...mapActions(["DELETE_TASK", "UPDATE_STATUS_TO_PENDING", "UPDATE_STATUS_TO_PAID", "GET_TASKS"]),
+    ...mapActions([
+      "DELETE_TASK",
+      "UPDATE_STATUS_TO_PENDING",
+      "UPDATE_STATUS_TO_PAID",
+      "GET_TASKS",
+    ]),
 
     async getCurrentTask() {
       if (!this.currentTaskArray) {
         await this.GET_TASKS();
       }
-      
+
       this.SET_CURRENT_TASK(this.$route.params.taskID);
 
       this.currentTask = this.currentTaskArray[0];
@@ -135,7 +133,7 @@ export default {
     },
     async deleteTask(docID) {
       await this.DELETE_TASK(docID);
-      this.$router.push({name: "Home"});
+      this.$router.push({ name: "Home" });
     },
     updateToPaid(docID) {
       this.UPDATE_STATUS_TO_PAID(docID);
@@ -149,10 +147,10 @@ export default {
   },
   watch: {
     editTask() {
-      if(!this.editTask) {
+      if (!this.editTask) {
         this.currentTask = this.currentTaskArray[0];
       }
-    }
+    },
   },
 };
 </script>
@@ -214,6 +212,7 @@ export default {
 
       .left {
         font-size: 12px;
+        flex: 2;
 
         p:first-child {
           font-size: 24px;
@@ -234,13 +233,19 @@ export default {
       .right {
         font-size: 12px;
         align-items: flex-end;
+        flex: 1;
+
+        p:first-child {
+          text-transform: uppercase;
+        }
       }
     }
 
     .middle {
       margin-top: 50px;
       color: #dfe3fa;
-      gap: 16px;
+      gap: 32px;
+      flex: 1;
 
       h4 {
         font-size: 12px;
@@ -250,38 +255,10 @@ export default {
 
       p {
         font-size: 16px;
+        font-weight: 600;
       }
 
-      .bill,
-      .payment {
-        flex: 1;
-      }
-
-      .payment {
-        h4:nth-child(3) {
-          margin-top: 32px;
-        }
-
-        p {
-          font-weight: 600;
-        }
-      }
-
-      .bill {
-        p:nth-child(2) {
-          font-size: 16px;
-        }
-
-        p:nth-child(3) {
-          margin-top: auto;
-        }
-
-        p {
-          font-size: 12px;
-        }
-      }
-
-      .send-to {
+      .assigned {
         flex: 2;
       }
     }

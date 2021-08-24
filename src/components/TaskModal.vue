@@ -16,74 +16,23 @@
             v-model="taskName"
           />
         </div>
-        <div class="location-details flex">
-          <div class="input flex flex-column">
-            <label for="biller-city">City</label>
-            <input required type="text" id="biller-city" v-model="billerCity" />
-          </div>
-          <div class="input flex flex-column">
-            <label for="biller-zipcode">Zip Code</label>
-            <input
-              required
-              type="text"
-              id="biller-zipcode"
-              v-model="billerZipCode"
-            />
-          </div>
-          <div class="input flex flex-column">
-            <label for="biller-country">Country</label>
-            <input
-              required
-              type="text"
-              id="biller-country"
-              v-model="billerCountry"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="bill-to flex flex-column">
-        <h4>Bill To</h4>
         <div class="input flex flex-column">
-          <label for="client-name">Client Name</label>
-          <input required type="text" id="client-name" v-model="clientName" />
-        </div>
-        <div class="input flex flex-column">
-          <label for="client-email">Client Email</label>
-          <input required type="text" id="client-email" v-model="clientEmail" />
-        </div>
-        <div class="input flex flex-column">
-          <label for="client-street-address">Street Address</label>
+          <label for="description">Task Description</label>
           <input
             required
             type="text"
-            id="client-street-address"
-            v-model="clientStreetAddress"
+            id="description"
+            v-model="taskDescription"
           />
         </div>
-        <div class="location-details flex">
-          <div class="input flex flex-column">
-            <label for="client-city">City</label>
-            <input required type="text" id="client-city" v-model="clientCity" />
-          </div>
-          <div class="input flex flex-column">
-            <label for="client-zipcode">Zip Code</label>
-            <input
-              required
-              type="text"
-              id="client-zipcode"
-              v-model="clientZipCode"
-            />
-          </div>
-          <div class="input flex flex-column">
-            <label for="client-country">Country</label>
-            <input
-              required
-              type="text"
-              id="client-country"
-              v-model="clientCountry"
-            />
-          </div>
+        <div class="created-by input flex flex-column">
+          <label for="created-by">Created By</label>
+          <input
+            disabled
+            type="text"
+            id="created-by"
+            v-model="createdBy"
+          />
         </div>
       </div>
 
@@ -112,15 +61,6 @@
             <option value="60">Net 60 Days</option>
           </select>
         </div> -->
-        <div class="input flex flex-column">
-          <label for="product-description">Product Description</label>
-          <input
-            required
-            type="text"
-            id="product-description"
-            v-model="productDescription"
-          />
-        </div>
         <div class="work-items">
           <h3>Item List</h3>
           <table class="item-list">
@@ -212,19 +152,12 @@ export default {
       docID: null,
 
       taskName: null,
-      billerCity: null,
-      billerZipCode: null,
-      billerCountry: null,
-      clientName: null,
-      clientEmail: null,
-      clientStreetAddress: null,
-      clientCity: null,
-      clientZipCode: null,
-      clientCountry: null,
+      taskDescription: null,
+      createdBy: null,
+
       taskDateUnix: null,
       taskDate: null,
       //paymentTerms: null,
-      productDescription: null,
       taskPending: null,
       taskDraft: null,
       taskItemList: [],
@@ -234,6 +167,7 @@ export default {
       taskDueDateCal: null,
       taskDueDate: null,
       minDate: null,
+
     };
   },
   components: {
@@ -248,21 +182,18 @@ export default {
         "en-us",
         this.dateOptions
       );
+
+      this.createdBy = this.userProfile.firstName;
     }
 
     if (this.editTask) {
       const currentTask = this.currentTaskArray[0];
+
       this.docID = currentTask.docID;
       this.taskName = currentTask.taskName;
-      this.billerCity = currentTask.billerCity;
-      this.billerZipCode = currentTask.billerZipCode;
-      this.billerCountry = currentTask.billerCountry;
-      this.clientName = currentTask.clientName;
-      this.clientEmail = currentTask.clientEmail;
-      this.clientStreetAddress = currentTask.clientStreetAddress;
-      this.clientCity = currentTask.clientCity;
-      this.clientZipCode = currentTask.clientZipCode;
-      this.clientCountry = currentTask.clientCountry;
+      this.taskDescription = currentTask.taskDescription;
+      this.createdBy = currentTask.createdBy;
+
       this.taskDateCal = currentTask.taskDateCal;
       this.taskDateUnix = currentTask.taskDateUnix;
       this.taskDate = currentTask.taskDate;
@@ -270,11 +201,11 @@ export default {
       this.taskDueDateUnix = currentTask.taskDueDateUnix;
       this.taskDueDateCal = currentTask.taskDueDate;
       this.taskDueDate = currentTask.taskDueDate;
-      this.productDescription = currentTask.productDescription;
       this.taskPending = currentTask.taskPending;
       this.taskDraft = currentTask.taskDraft;
       this.taskItemList = currentTask.taskItemList;
       this.taskTotal = currentTask.taskTotal;
+
     }
 
     this.minDate = new Date();
@@ -338,22 +269,15 @@ export default {
         taskID: uid(6),
 
         taskName: this.taskName,
-        billerCity: this.billerCity,
-        billerZipCode: this.billerZipCode,
-        billerCountry: this.billerCountry,
-        clientName: this.clientName,
-        clientEmail: this.clientEmail,
-        clientStreetAddress: this.clientStreetAddress,
-        clientCity: this.clientCity,
-        clientZipCode: this.clientZipCode,
-        clientCountry: this.clientCountry,
+        taskDescription: this.taskDescription,
+        createdBy: this.createdBy,
+
         taskDateUnix: this.taskDateUnix,
         taskDate: this.taskDate,
         //paymentTerms: this.paymentTerms,
         taskDueDateUnix: this.taskDueDateUnix,
         taskDueDateCal: this.taskDueDateCal,
         taskDueDate: this.taskDueDate,
-        productDescription: this.productDescription,
         taskPending: this.taskPending,
         taskDraft: this.taskDraft,
         taskItemList: this.taskItemList,
@@ -386,20 +310,13 @@ export default {
 
       await dataBase.update({
         taskName: this.taskName,
-        billerCity: this.billerCity,
-        billerZipCode: this.billerZipCode,
-        billerCountry: this.billerCountry,
-        clientName: this.clientName,
-        clientEmail: this.clientEmail,
-        clientStreetAddress: this.clientStreetAddress,
-        clientCity: this.clientCity,
-        clientZipCode: this.clientZipCode,
-        clientCountry: this.clientCountry,
+        taskDescription: this.taskDescription,
+        createdBy: this.createdBy,
+
         //paymentTerms: this.paymentTerms,
         taskDueDateUnix: this.taskDueDateUnix,
         taskDueDateCal: this.taskDueDateCal,
         taskDueDate: this.taskDueDate,
-        productDescription: this.productDescription,
         taskItemList: this.taskItemList,
         taskTotal: this.taskTotal,
       });
@@ -484,6 +401,10 @@ export default {
       margin-bottom: 24px;
       color: #7c5dfa;
       font-size: 12px;
+    }
+
+    .created-by {
+      width: 50%;
     }
 
     // Bill to / Bill from
