@@ -1,9 +1,5 @@
 <template>
-  <div
-    @click="checkClick"
-    ref="taskWrap"
-    class="task-wrap flex flex-column"
-  >
+  <div @click="checkClick" ref="taskWrap" class="task-wrap flex flex-column">
     <form @submit.prevent="submitForm" class="task-content">
       <Loading v-show="loading" />
       <h1 v-if="!editTask">New Task</h1>
@@ -92,27 +88,19 @@
       </div>
 
       <div class="task-work flex flex-column">
-        <div class="payment flex">
+        <div class="dates flex">
           <div class="input flex flex-column">
-            <label for="task-date">Task Date</label>
-            <input
-              disabled
-              type="text"
-              id="task-date"
-              v-model="taskDate"
-            />
+            <label for="task-date">Date Created</label>
+            <input disabled type="text" id="task-date" v-model="taskDate" />
           </div>
           <div class="input flex flex-column">
-            <label for="payment-due-date">Payment Due Date</label>
-            <input
-              disabled
-              type="text"
-              id="payment-due-date"
-              v-model="paymentDueDate"
-            />
+            <label for="task-due-date">Due Date</label>
+            <div class="calendar" id="task-due-date">
+              <Calendar v-model="taskDueDateCal" dateFormat="M dd, yy" :minDate="minDate" :manualInput="false" />
+            </div>
           </div>
         </div>
-        <div class="input flex flex-column">
+        <!-- <div class="input flex flex-column">
           <label for="payment-terms">Payment Terms</label>
           <select
             required
@@ -123,7 +111,7 @@
             <option value="30">Net 30 Days</option>
             <option value="60">Net 60 Days</option>
           </select>
-        </div>
+        </div> -->
         <div class="input flex flex-column">
           <label for="product-description">Product Description</label>
           <input
@@ -209,9 +197,11 @@
 <script>
 import firebase from "firebase";
 import { db } from "../firebase/firebaseInit";
-import Loading from "../components/Loading.vue";
 import { mapActions, mapMutations, mapState } from "vuex";
 import { uid } from "uid";
+
+import Loading from "../components/Loading.vue";
+import Calendar from "primevue/calendar";
 
 export default {
   name: "taskModal",
@@ -233,18 +223,22 @@ export default {
       clientCountry: null,
       taskDateUnix: null,
       taskDate: null,
-      paymentTerms: null,
-      paymentDueDateUnix: null,
-      paymentDueDate: null,
+      //paymentTerms: null,
       productDescription: null,
       taskPending: null,
       taskDraft: null,
       taskItemList: [],
       taskTotal: 0,
+
+      taskDueDateUnix: null,
+      taskDueDateCal: null,
+      taskDueDate: null,
+      minDate: null,
     };
   },
   components: {
     Loading,
+    Calendar,
   },
   created() {
     if (!this.editTask) {
@@ -269,17 +263,21 @@ export default {
       this.clientCity = currentTask.clientCity;
       this.clientZipCode = currentTask.clientZipCode;
       this.clientCountry = currentTask.clientCountry;
+      this.taskDateCal = currentTask.taskDateCal;
       this.taskDateUnix = currentTask.taskDateUnix;
       this.taskDate = currentTask.taskDate;
-      this.paymentTerms = currentTask.paymentTerms;
-      this.paymentDueDateUnix = currentTask.paymentDueDateUnix;
-      this.paymentDueDate = currentTask.paymentDueDate;
+      //this.paymentTerms = currentTask.paymentTerms;
+      this.taskDueDateUnix = currentTask.taskDueDateUnix;
+      this.taskDueDateCal = currentTask.taskDueDate;
+      this.taskDueDate = currentTask.taskDueDate;
       this.productDescription = currentTask.productDescription;
       this.taskPending = currentTask.taskPending;
       this.taskDraft = currentTask.taskDraft;
       this.taskItemList = currentTask.taskItemList;
       this.taskTotal = currentTask.taskTotal;
     }
+
+    this.minDate = new Date();
   },
   methods: {
     ...mapMutations(["TOGGLE_TASK", "TOGGLE_EXIT", "TOGGLE_EDIT_TASK"]),
@@ -308,9 +306,7 @@ export default {
       });
     },
     deleteTaskItem(id) {
-      this.taskItemList = this.taskItemList.filter(
-        (item) => item.id !== id
-      );
+      this.taskItemList = this.taskItemList.filter((item) => item.id !== id);
     },
     calculateTotal() {
       this.taskTotal = 0;
@@ -353,9 +349,10 @@ export default {
         clientCountry: this.clientCountry,
         taskDateUnix: this.taskDateUnix,
         taskDate: this.taskDate,
-        paymentTerms: this.paymentTerms,
-        paymentDueDateUnix: this.paymentDueDateUnix,
-        paymentDueDate: this.paymentDueDate,
+        //paymentTerms: this.paymentTerms,
+        taskDueDateUnix: this.taskDueDateUnix,
+        taskDueDateCal: this.taskDueDateCal,
+        taskDueDate: this.taskDueDate,
         productDescription: this.productDescription,
         taskPending: this.taskPending,
         taskDraft: this.taskDraft,
@@ -365,13 +362,11 @@ export default {
         taskPaid: null,
       });
 
-      console.log(this.userProfile.groupID)
+      console.log(this.userProfile.groupID);
       const groupDoc = db.collection("groups").doc(this.userProfile.groupID);
-          groupDoc.update({
-            tasks: firebase.firestore.FieldValue.arrayUnion(
-              dataBase.id
-            ),
-          });
+      groupDoc.update({
+        tasks: firebase.firestore.FieldValue.arrayUnion(dataBase.id),
+      });
 
       this.loading = false;
       this.TOGGLE_TASK();
@@ -400,9 +395,10 @@ export default {
         clientCity: this.clientCity,
         clientZipCode: this.clientZipCode,
         clientCountry: this.clientCountry,
-        paymentTerms: this.paymentTerms,
-        paymentDueDateUnix: this.paymentDueDateUnix,
-        paymentDueDate: this.paymentDueDate,
+        //paymentTerms: this.paymentTerms,
+        taskDueDateUnix: this.taskDueDateUnix,
+        taskDueDateCal: this.taskDueDateCal,
+        taskDueDate: this.taskDueDate,
         productDescription: this.productDescription,
         taskItemList: this.taskItemList,
         taskTotal: this.taskTotal,
@@ -410,7 +406,7 @@ export default {
 
       this.loading = false;
 
-      const data = {docID: this.docID, routeID: this.$route.params.taskID};
+      const data = { docID: this.docID, routeID: this.$route.params.taskID };
       this.UPDATE_TASK(data);
     },
     submitForm() {
@@ -425,7 +421,8 @@ export default {
     ...mapState(["editTask", "currentTaskArray", "userProfile"]),
   },
   watch: {
-    paymentTerms() {
+    //? REFER TO THIS METHOD FOR RECURRING DUE DATES
+    /*paymentTerms() {
       const futureDate = new Date();
       this.paymentDueDateUnix = futureDate.setDate(
         futureDate.getDate() + parseInt(this.paymentTerms)
@@ -434,6 +431,14 @@ export default {
         "en-us",
         this.dateOptions
       );
+    },*/
+
+    taskDueDateCal() {
+      this.taskDueDate = new Date(this.taskDueDateCal).toLocaleString(
+        "en-us",
+        this.dateOptions
+      );
+      this.taskDueDateUnix = parseInt((new Date(this.taskDueDate).getTime()).toFixed(0)); 
     },
   },
 };
@@ -447,6 +452,7 @@ export default {
   background-color: transparent;
   width: 100%;
   height: calc(100vh - 78px);
+  z-index: 100;
 
   overflow: scroll;
   &::-webkit-scrollbar {
@@ -495,7 +501,7 @@ export default {
 
     // task work
     .task-work {
-      .payment {
+      .dates {
         gap: 24px;
         div {
           flex: 1;

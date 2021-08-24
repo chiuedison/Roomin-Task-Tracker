@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentTask" class="task-view container">
+  <div v-if="currentTask && tasksLoaded" class="task-view container">
     <router-link class="nav-link flex" :to="{ name: 'Home' }">
       <img src="@/assets/icon-arrow-left.svg" alt="" /> Go Back
     </router-link>
@@ -61,7 +61,7 @@
           <h4>Task Date</h4>
           <p>{{ currentTask.taskDate }}</p>
           <h4>Payment Date</h4>
-          <p>{{ currentTask.paymentDueDate }}</p>
+          <p>{{ currentTask.taskDueDate }}</p>
         </div>
         <div class="bill flex flex-column">
           <h4>Bill To</h4>
@@ -118,9 +118,13 @@ export default {
   },
   methods: {
     ...mapMutations(["SET_CURRENT_TASK", "TOGGLE_EDIT_TASK", "TOGGLE_TASK"]),
-    ...mapActions(["DELETE_TASK", "UPDATE_STATUS_TO_PENDING", "UPDATE_STATUS_TO_PAID"]),
+    ...mapActions(["DELETE_TASK", "UPDATE_STATUS_TO_PENDING", "UPDATE_STATUS_TO_PAID", "GET_TASKS"]),
 
-    getCurrentTask() {
+    async getCurrentTask() {
+      if (!this.currentTaskArray) {
+        await this.GET_TASKS();
+      }
+      
       this.SET_CURRENT_TASK(this.$route.params.taskID);
 
       this.currentTask = this.currentTaskArray[0];
@@ -141,7 +145,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(["currentTaskArray", "editTask"]),
+    ...mapState(["currentTaskArray", "editTask", "tasksLoaded"]),
   },
   watch: {
     editTask() {

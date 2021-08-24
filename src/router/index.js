@@ -10,6 +10,9 @@ const routes = [
     path: "/",
     name: "Home",
     component: Home,
+    meta: {
+      title: "Roomin",
+    }
   },
   {
     path: "/task/:taskID",

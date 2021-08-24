@@ -234,4 +234,61 @@ button,
   color: #dfe3fa;
   background-color: rgba(223, 227, 250, 0.1);
 }
+
+.p-datepicker-group-container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.p-datepicker {
+  width: 280px;
+}
+
+.p-inputtext {
+  background-color: #1e2139;
+  color: white;
+  padding: 12px 4px;
+  border: none;
+  border-radius: 4px;
+  min-width: 280px;
+}
+
+.p-disabled {
+  color: darkgray;
+}
+
+.p-highlight {
+  background-color: #7c5dfa;
+  color: white;
+  border-radius: 10px;
+}
+
+.p-datepicker-next {
+  background-color: white;
+  border-radius: 0;
+  padding: 0;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-left: 16px solid #7c5dfa;
+  border-bottom: 5px solid transparent;
+  margin-right: 12px;
+}
+
+.p-datepicker-prev {
+  background-color: white;
+  border-radius: 0;
+  padding: 0;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-right: 16px solid #7c5dfa;
+  border-bottom: 5px solid transparent;
+  margin-left: 12px;
+}
+
+.p-datepicker-month {
+  padding-right: 4px;
+}
 </style>
