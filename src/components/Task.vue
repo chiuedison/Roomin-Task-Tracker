@@ -6,7 +6,7 @@
     <div class="left flex">
       <span class="tracking-number">{{ task.taskName }}</span>
       <span class="due-date">{{ task.taskDueDate }}</span>
-      <span class="person">{{ task.clientName }}</span>
+      <span class="person">{{ task.assignee.name }}</span>
     </div>
     <div class="right flex">
       <span class="price">${{ task.taskTotal }}</span>

@@ -131,6 +131,7 @@ export default createStore({
 
                   taskName: doc.data().taskName,
                   createdBy: doc.data().createdBy,
+                  assignee: doc.data().assignee,
 
                   taskDateUnix: doc.data().taskDateUnix,
                   taskDate: doc.data().taskDate,

@@ -66,7 +66,7 @@
         </div>
         <div class="flex assigned flex-column">
           <h4>Assigned To</h4>
-          <p>{{ currentTask.assignedTo }}</p>
+          <p>{{ currentTask.assignee.name }}</p>
         </div>
       </div>
       <div class="bottom flex flex-column">

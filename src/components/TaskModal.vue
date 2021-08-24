@@ -5,16 +5,11 @@
       <h1 v-if="!editTask">New Task</h1>
       <h1 v-else>Edit Task</h1>
 
-      <div class="bill-from flex flex-column">
+      <div class="task-info flex flex-column">
         <h4>Task Information</h4>
         <div class="input flex flex-column">
           <label for="task-name">Task Name</label>
-          <input
-            required
-            type="text"
-            id="task-name"
-            v-model="taskName"
-          />
+          <input required type="text" id="task-name" v-model="taskName" />
         </div>
         <div class="input flex flex-column">
           <label for="description">Task Description</label>
@@ -25,14 +20,22 @@
             v-model="taskDescription"
           />
         </div>
-        <div class="created-by input flex flex-column">
-          <label for="created-by">Created By</label>
-          <input
-            disabled
-            type="text"
-            id="created-by"
-            v-model="createdBy"
-          />
+        <div class="people flex">
+          <div class="created-by input flex flex-column">
+            <label for="created-by">Created By</label>
+            <input disabled type="text" id="created-by" v-model="createdBy" />
+          </div>
+          <div class="assigned-to input flex flex-column">
+            <label for="assigned-to">Assigned To</label>
+            <select id="assigned-to" v-model="assignee">
+              <option
+                v-for="(user, index) in groupMembers"
+                :key="index"
+                :value="user"
+                >{{ user.name }}</option
+              >
+            </select>
+          </div>
         </div>
       </div>
 
@@ -45,7 +48,12 @@
           <div class="input flex flex-column">
             <label for="task-due-date">Due Date</label>
             <div class="calendar" id="task-due-date">
-              <Calendar v-model="taskDueDateCal" dateFormat="M dd, yy" :minDate="minDate" :manualInput="false" />
+              <Calendar
+                v-model="taskDueDateCal"
+                dateFormat="M dd, yy"
+                :minDate="minDate"
+                :manualInput="false"
+              />
             </div>
           </div>
         </div>
@@ -168,6 +176,8 @@ export default {
       taskDueDate: null,
       minDate: null,
 
+      groupMembers: [],
+      assignee: null,
     };
   },
   components: {
@@ -193,6 +203,7 @@ export default {
       this.taskName = currentTask.taskName;
       this.taskDescription = currentTask.taskDescription;
       this.createdBy = currentTask.createdBy;
+      this.assignee = currentTask.assignee;
 
       this.taskDateCal = currentTask.taskDateCal;
       this.taskDateUnix = currentTask.taskDateUnix;
@@ -205,10 +216,11 @@ export default {
       this.taskDraft = currentTask.taskDraft;
       this.taskItemList = currentTask.taskItemList;
       this.taskTotal = currentTask.taskTotal;
-
     }
 
     this.minDate = new Date();
+
+    this.getGroup();
   },
   methods: {
     ...mapMutations(["TOGGLE_TASK", "TOGGLE_EXIT", "TOGGLE_EDIT_TASK"]),
@@ -219,7 +231,25 @@ export default {
         this.TOGGLE_EXIT();
       }
     },
+    async getGroup() {
+      //! OPTIMIZE
+      const groupDoc = db.collection("groups").doc(this.userProfile.groupID);
+      const groupArray = await groupDoc.get().then((doc) => doc.data().users);
 
+      const userDB = db.collection("users");
+      const users = await userDB.get();
+
+      groupArray.forEach((userID) => {
+        users.forEach((user) => {
+          if (user.data().userID === userID) {
+            this.groupMembers.push({
+              name: user.data().firstName,
+              id: user.data().userID,
+            });
+          }
+        });
+      });
+    },
     closeTask() {
       this.TOGGLE_TASK();
 
@@ -271,6 +301,7 @@ export default {
         taskName: this.taskName,
         taskDescription: this.taskDescription,
         createdBy: this.createdBy,
+        assignee: this.assignee,
 
         taskDateUnix: this.taskDateUnix,
         taskDate: this.taskDate,
@@ -312,6 +343,7 @@ export default {
         taskName: this.taskName,
         taskDescription: this.taskDescription,
         createdBy: this.createdBy,
+        assignee: this.assignee,
 
         //paymentTerms: this.paymentTerms,
         taskDueDateUnix: this.taskDueDateUnix,
@@ -355,7 +387,9 @@ export default {
         "en-us",
         this.dateOptions
       );
-      this.taskDueDateUnix = parseInt((new Date(this.taskDueDate).getTime()).toFixed(0)); 
+      this.taskDueDateUnix = parseInt(
+        new Date(this.taskDueDate).getTime().toFixed(0)
+      );
     },
   },
 };
@@ -403,19 +437,29 @@ export default {
       font-size: 12px;
     }
 
-    .created-by {
-      width: 50%;
-    }
-
-    // Bill to / Bill from
-    .bill-to,
-    .bill-from {
-      margin-bottom: 48px;
+    .task-info {
+      margin-bottom: 24px;
 
       .location-details {
         gap: 16px;
         div {
           flex: 1;
+        }
+      }
+
+      .people {
+        gap: 24px;
+
+        .created-by {
+          flex: 1;
+        }
+
+        .assigned-to {
+          flex: 2;
+        }
+
+        option:hover {
+          background-color: #7c5dfa;
         }
       }
     }
