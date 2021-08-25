@@ -44,6 +44,16 @@
             :task="task"
           />
         </div>
+
+        <div class="assigned-tasks" v-if="taskData.length > 0">
+          <h2>My Tasks</h2>
+          <Task
+            v-for="(task, index) in assignedTasks"
+            :key="index"
+            :task="task"
+          />
+        </div>
+
         <div v-else class="empty flex flex-column">
           <img src="@/assets/illustration-empty.svg" alt="" />
           <h3>There is nothing here</h3>
@@ -76,6 +86,8 @@ export default {
       filterMenu: null,
       filteredTask: null,
       username: null,
+
+      assignedTasks: [],
     };
   },
   components: {
@@ -105,6 +117,14 @@ export default {
       //await this.GET_USER_DATA();
       console.log(this.userProfile.groupID);
     },
+
+    async loadTasks() {
+      await this.GET_TASKS();
+
+      this.assignedTasks = this.taskData.filter((task) => {
+        return task.assignee.id === this.userProfile.userID;
+      });
+    },
   },
   computed: {
     ...mapState([
@@ -132,7 +152,7 @@ export default {
     },
   },
   created() {
-    this.GET_TASKS();
+    this.loadTasks();
     //this.CHECK_LOGIN();
     //this.checkGroups();
   },
@@ -224,7 +244,8 @@ export default {
     }
   }
 
-  .all-tasks {
+  .all-tasks,
+  .assigned-tasks {
     h2 {
       margin-bottom: 16px;
     }
