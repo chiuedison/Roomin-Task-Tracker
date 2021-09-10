@@ -4,23 +4,23 @@
     :to="{ name: 'Task', params: { taskID: task.taskID } }"
   >
     <div class="left flex">
-      <span class="tracking-number">#{{ task.taskID }}</span>
-      <span class="due-date">{{ task.paymentDueDate }}</span>
-      <span class="person">{{ task.clientName }}</span>
+      <span class="tracking-number">{{ task.taskName }}</span>
+      <span class="due-date">{{ task.taskDueDate }}</span>
+      <span class="person">{{ task.assignee.name }}</span>
     </div>
     <div class="right flex">
       <span class="price">${{ task.taskTotal }}</span>
       <div
         class="status-button flex"
         :class="{
-          paid: task.taskPaid,
+          complete: task.taskComplete,
           draft: task.taskDraft,
           pending: task.taskPending,
         }"
       >
-        <span v-if="task.taskPaid">Paid</span>
+        <span v-if="task.taskComplete">Completed</span>
         <span v-if="task.taskDraft">Draft</span>
-        <span v-if="task.taskPending">Pending</span>
+        <span v-if="task.taskPending">In Progress</span>
       </div>
       <div class="icon">
         <img src="@/assets/icon-arrow-right.svg" alt="">

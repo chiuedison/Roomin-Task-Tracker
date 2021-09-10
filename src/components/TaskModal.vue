@@ -1,118 +1,66 @@
 <template>
-  <div
-    @click="checkClick"
-    ref="taskWrap"
-    class="task-wrap flex flex-column"
-  >
+  <div @click="checkClick" ref="taskWrap" class="task-wrap flex flex-column">
     <form @submit.prevent="submitForm" class="task-content">
       <Loading v-show="loading" />
       <h1 v-if="!editTask">New Task</h1>
       <h1 v-else>Edit Task</h1>
 
-      <div class="bill-from flex flex-column">
-        <h4>Bill From</h4>
+      <div class="task-info flex flex-column">
+        <h3>Task Information</h3>
         <div class="input flex flex-column">
-          <label for="biller-street-address">Street Address</label>
+          <label for="task-name">Task Name</label>
+          <input required type="text" id="task-name" v-model="taskName" />
+        </div>
+        <div class="input flex flex-column">
+          <label for="description">Task Description</label>
           <input
             required
             type="text"
-            id="biller-street-address"
-            v-model="billerStreetAddress"
+            id="description"
+            v-model="taskDescription"
           />
         </div>
-        <div class="location-details flex">
-          <div class="input flex flex-column">
-            <label for="biller-city">City</label>
-            <input required type="text" id="biller-city" v-model="billerCity" />
+        <div class="people flex">
+          <div class="created-by input flex flex-column">
+            <label for="created-by">Created By</label>
+            <input disabled type="text" id="created-by" v-model="createdBy" />
           </div>
-          <div class="input flex flex-column">
-            <label for="biller-zipcode">Zip Code</label>
-            <input
-              required
-              type="text"
-              id="biller-zipcode"
-              v-model="billerZipCode"
-            />
+          <div class="assigned-to input flex flex-column">
+            <label for="assigned-to">Assigned To</label>
+            <select id="assigned-to" v-model="assignee">
+              <option
+                v-for="(user, index) in groupMembers"
+                :key="index"
+                :value="user"
+                >{{ user.name }}</option
+              >
+            </select>
           </div>
-          <div class="input flex flex-column">
-            <label for="biller-country">Country</label>
-            <input
-              required
-              type="text"
-              id="biller-country"
-              v-model="billerCountry"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="bill-to flex flex-column">
-        <h4>Bill To</h4>
-        <div class="input flex flex-column">
-          <label for="client-name">Client Name</label>
-          <input required type="text" id="client-name" v-model="clientName" />
-        </div>
-        <div class="input flex flex-column">
-          <label for="client-email">Client Email</label>
-          <input required type="text" id="client-email" v-model="clientEmail" />
-        </div>
-        <div class="input flex flex-column">
-          <label for="client-street-address">Street Address</label>
-          <input
-            required
-            type="text"
-            id="client-street-address"
-            v-model="clientStreetAddress"
-          />
-        </div>
-        <div class="location-details flex">
-          <div class="input flex flex-column">
-            <label for="client-city">City</label>
-            <input required type="text" id="client-city" v-model="clientCity" />
-          </div>
-          <div class="input flex flex-column">
-            <label for="client-zipcode">Zip Code</label>
-            <input
-              required
-              type="text"
-              id="client-zipcode"
-              v-model="clientZipCode"
-            />
-          </div>
-          <div class="input flex flex-column">
-            <label for="client-country">Country</label>
-            <input
-              required
-              type="text"
-              id="client-country"
-              v-model="clientCountry"
-            />
+          <div class="random flex flex-column">
+            <button type="button" @click="randomAssign">Random</button>
           </div>
         </div>
       </div>
 
       <div class="task-work flex flex-column">
-        <div class="payment flex">
+        <div class="dates flex">
           <div class="input flex flex-column">
-            <label for="task-date">Task Date</label>
-            <input
-              disabled
-              type="text"
-              id="task-date"
-              v-model="taskDate"
-            />
+            <label for="task-date">Date Created</label>
+            <input disabled type="text" id="task-date" v-model="taskDate" />
           </div>
           <div class="input flex flex-column">
-            <label for="payment-due-date">Payment Due Date</label>
-            <input
-              disabled
-              type="text"
-              id="payment-due-date"
-              v-model="paymentDueDate"
-            />
+            <label for="task-due-date">Due Date</label>
+            <div class="calendar" id="task-due-date">
+              <Calendar
+                v-model="taskDueDateCal"
+                dateFormat="M dd, yy"
+                :minDate="minDate"
+                :manualInput="false"
+              />
+            </div>
           </div>
         </div>
-        <div class="input flex flex-column">
+        <!-- <div class="input flex flex-column">
           <label for="payment-terms">Payment Terms</label>
           <select
             required
@@ -123,32 +71,23 @@
             <option value="30">Net 30 Days</option>
             <option value="60">Net 60 Days</option>
           </select>
-        </div>
-        <div class="input flex flex-column">
-          <label for="product-description">Product Description</label>
-          <input
-            required
-            type="text"
-            id="product-description"
-            v-model="productDescription"
-          />
-        </div>
+        </div> -->
         <div class="work-items">
-          <h3>Item List</h3>
+          <h3>Costs</h3>
           <table class="item-list">
             <tr class="table-heading flex">
-              <th class="item-name">Item Name</th>
+              <th class="cost-name">Cost Name</th>
               <th class="qty">Qty</th>
               <th class="price">Price</th>
               <th class="total">Total</th>
             </tr>
             <tr
               class="table-items flex"
-              v-for="(item, index) in taskItemList"
+              v-for="(item, index) in taskCostList"
               :key="index"
             >
-              <td class="item-name">
-                <input type="text" id="" v-model="item.itemName" />
+              <td class="cost-name">
+                <input type="text" id="" v-model="item.costName" />
               </td>
               <td class="qty">
                 <input type="text" id="" v-model="item.qty" />
@@ -169,7 +108,7 @@
 
           <div @click="addNewTaskItem" class="flex button">
             <img src="@/assets/icon-plus.svg" alt="" />
-            Add New Item
+            Add New Cost
           </div>
         </div>
       </div>
@@ -209,9 +148,11 @@
 <script>
 import firebase from "firebase";
 import { db } from "../firebase/firebaseInit";
-import Loading from "../components/Loading.vue";
 import { mapActions, mapMutations, mapState } from "vuex";
 import { uid } from "uid";
+
+import Loading from "../components/Loading.vue";
+import Calendar from "primevue/calendar";
 
 export default {
   name: "taskModal",
@@ -221,30 +162,30 @@ export default {
       loading: null,
       docID: null,
 
-      billerStreetAddress: null,
-      billerCity: null,
-      billerZipCode: null,
-      billerCountry: null,
-      clientName: null,
-      clientEmail: null,
-      clientStreetAddress: null,
-      clientCity: null,
-      clientZipCode: null,
-      clientCountry: null,
+      taskName: null,
+      taskDescription: null,
+      createdBy: null,
+
       taskDateUnix: null,
       taskDate: null,
-      paymentTerms: null,
-      paymentDueDateUnix: null,
-      paymentDueDate: null,
-      productDescription: null,
+      //paymentTerms: null,
       taskPending: null,
       taskDraft: null,
-      taskItemList: [],
+      taskCostList: [],
       taskTotal: 0,
+
+      taskDueDateUnix: null,
+      taskDueDateCal: null,
+      taskDueDate: null,
+      minDate: null,
+
+      groupMembers: [],
+      assignee: null,
     };
   },
   components: {
     Loading,
+    Calendar,
   },
   created() {
     if (!this.editTask) {
@@ -254,32 +195,35 @@ export default {
         "en-us",
         this.dateOptions
       );
+
+      this.createdBy = this.userProfile.firstName;
     }
 
     if (this.editTask) {
       const currentTask = this.currentTaskArray[0];
+
       this.docID = currentTask.docID;
-      this.billerStreetAddress = currentTask.billerStreetAddress;
-      this.billerCity = currentTask.billerCity;
-      this.billerZipCode = currentTask.billerZipCode;
-      this.billerCountry = currentTask.billerCountry;
-      this.clientName = currentTask.clientName;
-      this.clientEmail = currentTask.clientEmail;
-      this.clientStreetAddress = currentTask.clientStreetAddress;
-      this.clientCity = currentTask.clientCity;
-      this.clientZipCode = currentTask.clientZipCode;
-      this.clientCountry = currentTask.clientCountry;
+      this.taskName = currentTask.taskName;
+      this.taskDescription = currentTask.taskDescription;
+      this.createdBy = currentTask.createdBy;
+      this.assignee = currentTask.assignee;
+
+      this.taskDateCal = currentTask.taskDateCal;
       this.taskDateUnix = currentTask.taskDateUnix;
       this.taskDate = currentTask.taskDate;
-      this.paymentTerms = currentTask.paymentTerms;
-      this.paymentDueDateUnix = currentTask.paymentDueDateUnix;
-      this.paymentDueDate = currentTask.paymentDueDate;
-      this.productDescription = currentTask.productDescription;
+      //this.paymentTerms = currentTask.paymentTerms;
+      this.taskDueDateUnix = currentTask.taskDueDateUnix;
+      this.taskDueDateCal = currentTask.taskDueDate;
+      this.taskDueDate = currentTask.taskDueDate;
       this.taskPending = currentTask.taskPending;
       this.taskDraft = currentTask.taskDraft;
-      this.taskItemList = currentTask.taskItemList;
+      this.taskCostList = currentTask.taskCostList;
       this.taskTotal = currentTask.taskTotal;
     }
+
+    this.minDate = new Date();
+
+    this.getGroup();
   },
   methods: {
     ...mapMutations(["TOGGLE_TASK", "TOGGLE_EXIT", "TOGGLE_EDIT_TASK"]),
@@ -290,7 +234,29 @@ export default {
         this.TOGGLE_EXIT();
       }
     },
+    async getGroup() {
+      //! OPTIMIZE
+      const groupDoc = db.collection("groups").doc(this.userProfile.groupID);
+      const groupArray = await groupDoc.get().then((doc) => doc.data().users);
 
+      const userDB = db.collection("users");
+      const users = await userDB.get();
+
+      groupArray.forEach((userID) => {
+        users.forEach((user) => {
+          if (user.data().userID === userID) {
+            this.groupMembers.push({
+              name: user.data().firstName,
+              id: user.data().userID,
+            });
+          }
+        });
+      });
+    },
+    randomAssign() {
+      const idx = Math.floor(Math.random() * this.groupMembers.length);
+      this.assignee = this.groupMembers[idx];
+    },
     closeTask() {
       this.TOGGLE_TASK();
 
@@ -299,22 +265,20 @@ export default {
       }
     },
     addNewTaskItem() {
-      this.taskItemList.push({
+      this.taskCostList.push({
         id: uid(),
-        itemName: "",
+        costName: "",
         qty: "",
         price: 0,
         total: 0,
       });
     },
     deleteTaskItem(id) {
-      this.taskItemList = this.taskItemList.filter(
-        (item) => item.id !== id
-      );
+      this.taskCostList = this.taskCostList.filter((item) => item.id !== id);
     },
     calculateTotal() {
       this.taskTotal = 0;
-      this.taskItemList.forEach((item) => {
+      this.taskCostList.forEach((item) => {
         this.taskTotal += item.total;
       });
     },
@@ -324,10 +288,11 @@ export default {
     },
     saveDraft() {
       this.taskDraft = true;
+      console.log(this.taskPending);
     },
 
     async uploadTask() {
-      if (this.taskItemList.length <= 0) {
+      if (this.taskCostList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -341,44 +306,37 @@ export default {
       await dataBase.set({
         taskID: uid(6),
 
-        billerStreetAddress: this.billerStreetAddress,
-        billerCity: this.billerCity,
-        billerZipCode: this.billerZipCode,
-        billerCountry: this.billerCountry,
-        clientName: this.clientName,
-        clientEmail: this.clientEmail,
-        clientStreetAddress: this.clientStreetAddress,
-        clientCity: this.clientCity,
-        clientZipCode: this.clientZipCode,
-        clientCountry: this.clientCountry,
+        taskName: this.taskName,
+        taskDescription: this.taskDescription,
+        createdBy: this.createdBy,
+        assignee: this.assignee,
+
         taskDateUnix: this.taskDateUnix,
         taskDate: this.taskDate,
-        paymentTerms: this.paymentTerms,
-        paymentDueDateUnix: this.paymentDueDateUnix,
-        paymentDueDate: this.paymentDueDate,
-        productDescription: this.productDescription,
+        //paymentTerms: this.paymentTerms,
+        taskDueDateUnix: this.taskDueDateUnix,
+        taskDueDateCal: this.taskDueDateCal,
+        taskDueDate: this.taskDueDate,
         taskPending: this.taskPending,
         taskDraft: this.taskDraft,
-        taskItemList: this.taskItemList,
+        taskCostList: this.taskCostList,
         taskTotal: this.taskTotal,
 
-        taskPaid: null,
+        taskComplete: null,
       });
 
-      console.log(this.userProfile.groupID)
+      console.log(this.userProfile.groupID);
       const groupDoc = db.collection("groups").doc(this.userProfile.groupID);
-          groupDoc.update({
-            tasks: firebase.firestore.FieldValue.arrayUnion(
-              dataBase.id
-            ),
-          });
+      groupDoc.update({
+        tasks: firebase.firestore.FieldValue.arrayUnion(dataBase.id),
+      });
 
       this.loading = false;
       this.TOGGLE_TASK();
       this.GET_TASKS();
     },
     async updateTask() {
-      if (this.taskItemList.length <= 0) {
+      if (this.taskCostList.length <= 0) {
         alert("Please ensure you filled out work items!");
         return;
       }
@@ -390,27 +348,22 @@ export default {
       const dataBase = db.collection("tasks").doc(this.docID);
 
       await dataBase.update({
-        billerStreetAddress: this.billerStreetAddress,
-        billerCity: this.billerCity,
-        billerZipCode: this.billerZipCode,
-        billerCountry: this.billerCountry,
-        clientName: this.clientName,
-        clientEmail: this.clientEmail,
-        clientStreetAddress: this.clientStreetAddress,
-        clientCity: this.clientCity,
-        clientZipCode: this.clientZipCode,
-        clientCountry: this.clientCountry,
-        paymentTerms: this.paymentTerms,
-        paymentDueDateUnix: this.paymentDueDateUnix,
-        paymentDueDate: this.paymentDueDate,
-        productDescription: this.productDescription,
-        taskItemList: this.taskItemList,
+        taskName: this.taskName,
+        taskDescription: this.taskDescription,
+        createdBy: this.createdBy,
+        assignee: this.assignee,
+
+        //paymentTerms: this.paymentTerms,
+        taskDueDateUnix: this.taskDueDateUnix,
+        taskDueDateCal: this.taskDueDateCal,
+        taskDueDate: this.taskDueDate,
+        taskCostList: this.taskCostList,
         taskTotal: this.taskTotal,
       });
 
       this.loading = false;
 
-      const data = {docID: this.docID, routeID: this.$route.params.taskID};
+      const data = { docID: this.docID, routeID: this.$route.params.taskID };
       this.UPDATE_TASK(data);
     },
     submitForm() {
@@ -425,7 +378,8 @@ export default {
     ...mapState(["editTask", "currentTaskArray", "userProfile"]),
   },
   watch: {
-    paymentTerms() {
+    //? REFER TO THIS METHOD FOR RECURRING DUE DATES
+    /*paymentTerms() {
       const futureDate = new Date();
       this.paymentDueDateUnix = futureDate.setDate(
         futureDate.getDate() + parseInt(this.paymentTerms)
@@ -433,6 +387,16 @@ export default {
       this.paymentDueDate = new Date(this.paymentDueDateUnix).toLocaleString(
         "en-us",
         this.dateOptions
+      );
+    },*/
+
+    taskDueDateCal() {
+      this.taskDueDate = new Date(this.taskDueDateCal).toLocaleString(
+        "en-us",
+        this.dateOptions
+      );
+      this.taskDueDateUnix = parseInt(
+        new Date(this.taskDueDate).getTime().toFixed(0)
       );
     },
   },
@@ -447,6 +411,7 @@ export default {
   background-color: transparent;
   width: 100%;
   height: calc(100vh - 78px);
+  z-index: 100;
 
   overflow: scroll;
   &::-webkit-scrollbar {
@@ -480,10 +445,8 @@ export default {
       font-size: 12px;
     }
 
-    // Bill to / Bill from
-    .bill-to,
-    .bill-from {
-      margin-bottom: 48px;
+    .task-info {
+      margin-bottom: 24px;
 
       .location-details {
         gap: 16px;
@@ -491,11 +454,38 @@ export default {
           flex: 1;
         }
       }
+
+      .people {
+        gap: 24px;
+
+        .created-by {
+          flex: 1;
+        }
+
+        .assigned-to {
+          flex: 2;
+
+          option:hover {
+            box-shadow: 0 0 10px 100px #7c5dfa inset;
+          }
+        }
+
+        .random {
+          color: white;
+          align-items: center;
+          justify-content: center;
+
+          button {
+            background-color: #7c5dfa;
+            padding: 12px;
+          }
+        }
+      }
     }
 
     // task work
     .task-work {
-      .payment {
+      .dates {
         gap: 24px;
         div {
           flex: 1;
@@ -512,7 +502,7 @@ export default {
             gap: 16px;
             font-size: 12px;
 
-            .item-name {
+            .cost-name {
               flex-basis: 50%;
             }
 

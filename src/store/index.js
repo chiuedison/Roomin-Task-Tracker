@@ -2,7 +2,6 @@ import { createStore } from "vuex";
 import { db, auth } from "../firebase/firebaseInit";
 import firebase from "firebase/app";
 import { uid } from "uid";
-//import router from "@/router";
 
 export default createStore({
   state: {
@@ -44,10 +43,10 @@ export default createStore({
     DELETE_TASK(state, payload) {
       state.taskData = state.taskData.filter((task) => task.docID !== payload);
     },
-    UPDATE_STATUS_TO_PAID(state, payload) {
+    UPDATE_STATUS_TO_COMPLETE(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.taskPaid = true;
+          task.taskComplete = true;
           task.taskPending = false;
         }
       });
@@ -55,7 +54,7 @@ export default createStore({
     UPDATE_STATUS_TO_PENDING(state, payload) {
       state.taskData.forEach((task) => {
         if (task.docID === payload) {
-          task.taskPaid = false;
+          task.taskComplete = false;
           task.taskPending = true;
           task.taskDraft = false;
         }
@@ -106,60 +105,57 @@ export default createStore({
 
       do {
         console.log("waiting on auth...");
-      } while (!auth.currentUser);
+      } while (!auth.currentUser && window.location.pathname === "/");
 
-      commit("CHECK_LOGIN");
-      await dispatch("GET_USER_DATA");
+      if (auth.currentUser) {
+        commit("CHECK_LOGIN");
+        await dispatch("GET_USER_DATA");
 
-      if (state.userProfile.groupID) {
-        const groupDoc = await db
-          .collection("groups")
-          .doc(state.userProfile.groupID)
-          .get();
-        const taskArray = groupDoc.data().tasks;
+        if (state.userProfile.groupID) {
+          const groupDoc = await db
+            .collection("groups")
+            .doc(state.userProfile.groupID)
+            .get();
+          const taskArray = groupDoc.data().tasks;
 
-        taskArray.forEach((groupTaskID) => {
-          // loops through each doc in tasks collection
-          results.forEach((doc) => {
-            // searches for matching task
-            if (groupTaskID == doc.id) {
-              // searches for doc in taskData array, adds it into array if not found
-              if (!state.taskData.some((task) => task.docID === doc.id)) {
-                const data = {
-                  docID: doc.id,
-                  taskID: doc.data().taskID,
+          taskArray.forEach((groupTaskID) => {
+            // loops through each doc in tasks collection
+            results.forEach((doc) => {
+              // searches for matching task
+              if (groupTaskID == doc.id) {
+                // searches for doc in taskData array, adds it into array if not found
+                if (!state.taskData.some((task) => task.docID === doc.id)) {
+                  const data = {
+                    docID: doc.id,
+                    taskID: doc.data().taskID,
 
-                  billerStreetAddress: doc.data().billerStreetAddress,
-                  billerCity: doc.data().billerCity,
-                  billerZipCode: doc.data().billerZipCode,
-                  billerCountry: doc.data().billerCountry,
-                  clientName: doc.data().clientName,
-                  clientEmail: doc.data().clientEmail,
-                  clientStreetAddress: doc.data().clientStreetAddress,
-                  clientCity: doc.data().clientCity,
-                  clientZipCode: doc.data().clientZipCode,
-                  clientCountry: doc.data().clientCountry,
-                  taskDateUnix: doc.data().taskDateUnix,
-                  taskDate: doc.data().taskDate,
-                  paymentTerms: doc.data().paymentTerms,
-                  paymentDueDateUnix: doc.data().paymentDueDateUnix,
-                  paymentDueDate: doc.data().paymentDueDate,
-                  productDescription: doc.data().productDescription,
-                  taskPending: doc.data().taskPending,
-                  taskDraft: doc.data().taskDraft,
-                  taskItemList: doc.data().taskItemList,
-                  taskTotal: doc.data().taskTotal,
-                  taskPaid: doc.data().taskPaid,
-                };
+                    taskName: doc.data().taskName,
+                    createdBy: doc.data().createdBy,
+                    assignee: doc.data().assignee,
 
-                commit("SET_TASK_DATA", data);
+                    taskDateUnix: doc.data().taskDateUnix,
+                    taskDate: doc.data().taskDate,
+                    paymentTerms: doc.data().paymentTerms,
+                    taskDueDateUnix: doc.data().taskDueDateUnix,
+                    taskDueDateCal: doc.data().taskDueDateCal,
+                    taskDueDate: doc.data().taskDueDate,
+                    taskDescription: doc.data().taskDescription,
+                    taskPending: doc.data().taskPending,
+                    taskDraft: doc.data().taskDraft,
+                    taskCostList: doc.data().taskCostList,
+                    taskTotal: doc.data().taskTotal,
+                    taskComplete: doc.data().taskComplete,
+                  };
+
+                  commit("SET_TASK_DATA", data);
+                }
               }
-            }
+            });
           });
-        });
-      }
+        }
 
-      commit("TASKS_LOADED");
+        commit("TASKS_LOADED");
+      }
     },
 
     async UPDATE_TASK({ commit, dispatch }, { docID, routeID }) {
@@ -185,23 +181,23 @@ export default createStore({
       commit("DELETE_TASK", docID);
     },
 
-    async UPDATE_STATUS_TO_PAID({ commit }, docID) {
+    async UPDATE_STATUS_TO_COMPLETE({ commit }, docID) {
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        taskPaid: true,
+        taskComplete: true,
         taskPending: false,
       });
 
       // front-end updates
-      commit("UPDATE_STATUS_TO_PAID", docID);
+      commit("UPDATE_STATUS_TO_COMPLETE", docID);
     },
 
     async UPDATE_STATUS_TO_PENDING({ commit }, docID) {
       // back-end updates
       const getTask = db.collection("tasks").doc(docID);
       await getTask.update({
-        taskPaid: false,
+        taskComplete: false,
         taskPending: true,
         taskDraft: false,
       });

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentTask" class="task-view container">
+  <div v-if="currentTask && tasksLoaded" class="task-view container">
     <router-link class="nav-link flex" :to="{ name: 'Home' }">
       <img src="@/assets/icon-arrow-left.svg" alt="" /> Go Back
     </router-link>
@@ -9,14 +9,14 @@
         <div
           class="status-button flex"
           :class="{
-            paid: currentTask.taskPaid,
+            complete: currentTask.taskComplete,
             draft: currentTask.taskDraft,
             pending: currentTask.taskPending,
           }"
         >
-          <span v-if="currentTask.taskPaid">Paid</span>
+          <span v-if="currentTask.taskComplete">Complete</span>
           <span v-if="currentTask.taskDraft">Draft</span>
-          <span v-if="currentTask.taskPending">Pending</span>
+          <span v-if="currentTask.taskPending">In Progress</span>
         </div>
       </div>
       <div class="right flex">
@@ -28,17 +28,17 @@
         </button>
         <button
           v-if="currentTask.taskPending"
-          @click="updateToPaid(currentTask.docID)"
+          @click="updateToComplete(currentTask.docID)"
           class="green"
         >
-          Mark as Paid
+          Mark as Complete
         </button>
         <button
-          v-if="currentTask.taskPaid || currentTask.taskDraft"
+          v-if="currentTask.taskComplete || currentTask.taskDraft"
           @click="updateToPending(currentTask.docID)"
           class="orange"
         >
-          Mark as Pending
+          Mark as Incomplete
         </button>
       </div>
     </div>
@@ -46,57 +46,50 @@
     <div class="task-details flex flex-column">
       <div class="top flex">
         <div class="left flex flex-column">
-          <p><span>#</span>{{ currentTask.taskID }}</p>
-          <p>{{ currentTask.productDescription }}</p>
+          <p>{{ currentTask.taskName }}</p>
+          <p>{{ currentTask.taskDescription }}</p>
         </div>
         <div class="right flex flex-column">
-          <p>{{ currentTask.billerStreetAddress }}</p>
-          <p>{{ currentTask.billerCity }}</p>
-          <p>{{ currentTask.billerZipCode }}</p>
-          <p>{{ currentTask.billerCountry }}</p>
+          <p><span>#</span>{{ currentTask.taskID }}</p>
+          <p>Created By:</p>
+          <p>{{ currentTask.createdBy }}</p>
         </div>
       </div>
       <div class="middle flex">
-        <div class="payment flex flex-column">
-          <h4>Task Date</h4>
+        <div class="flex flex-column">
+          <h4>Date Created</h4>
           <p>{{ currentTask.taskDate }}</p>
-          <h4>Payment Date</h4>
-          <p>{{ currentTask.paymentDueDate }}</p>
         </div>
-        <div class="bill flex flex-column">
-          <h4>Bill To</h4>
-          <p>{{ currentTask.clientName }}</p>
-          <p>{{ currentTask.clientStreetAddress }}</p>
-          <p>{{ currentTask.clientCity }}</p>
-          <p>{{ currentTask.clientZipCode }}</p>
-          <p>{{ currentTask.clientCountry }}</p>
+        <div class="flex flex-column">
+          <h4>Complete By</h4>
+          <p>{{ currentTask.taskDueDate }}</p>
         </div>
-        <div class="send-to flex flex-column">
-          <h4>Send To</h4>
-          <p>{{ currentTask.clientEmail }}</p>
+        <div class="flex assigned flex-column">
+          <h4>Assigned To</h4>
+          <p>{{ currentTask.assignee.name }}</p>
         </div>
       </div>
       <div class="bottom flex flex-column">
-        <div class="billing-items">
+        <div class="cost-items">
           <div class="heading flex">
-            <p>Item Name</p>
+            <p>Cost Name</p>
             <p>QTY</p>
             <p>Price</p>
             <p>Total</p>
           </div>
           <div
-            v-for="(item, index) in currentTask.taskItemList"
+            v-for="(item, index) in currentTask.taskCostList"
             :key="index"
             class="item flex"
           >
-            <p>{{ item.itemName }}</p>
+            <p>{{ item.costName }}</p>
             <p>{{ item.qty }}</p>
             <p>{{ item.price }}</p>
             <p>{{ item.total }}</p>
           </div>
         </div>
         <div class="total flex">
-          <p>Amount Due</p>
+          <p>Total Costs</p>
           <p>{{ currentTask.taskTotal }}</p>
         </div>
       </div>
@@ -118,9 +111,18 @@ export default {
   },
   methods: {
     ...mapMutations(["SET_CURRENT_TASK", "TOGGLE_EDIT_TASK", "TOGGLE_TASK"]),
-    ...mapActions(["DELETE_TASK", "UPDATE_STATUS_TO_PENDING", "UPDATE_STATUS_TO_PAID"]),
+    ...mapActions([
+      "DELETE_TASK",
+      "UPDATE_STATUS_TO_PENDING",
+      "UPDATE_STATUS_TO_COMPLETE",
+      "GET_TASKS",
+    ]),
 
-    getCurrentTask() {
+    async getCurrentTask() {
+      if (!this.currentTaskArray) {
+        await this.GET_TASKS();
+      }
+
       this.SET_CURRENT_TASK(this.$route.params.taskID);
 
       this.currentTask = this.currentTaskArray[0];
@@ -131,24 +133,24 @@ export default {
     },
     async deleteTask(docID) {
       await this.DELETE_TASK(docID);
-      this.$router.push({name: "Home"});
+      this.$router.push({ name: "Home" });
     },
-    updateToPaid(docID) {
-      this.UPDATE_STATUS_TO_PAID(docID);
+    updateToComplete(docID) {
+      this.UPDATE_STATUS_TO_COMPLETE(docID);
     },
     updateToPending(docID) {
       this.UPDATE_STATUS_TO_PENDING(docID);
     },
   },
   computed: {
-    ...mapState(["currentTaskArray", "editTask"]),
+    ...mapState(["currentTaskArray", "editTask", "tasksLoaded"]),
   },
   watch: {
     editTask() {
-      if(!this.editTask) {
+      if (!this.editTask) {
         this.currentTask = this.currentTaskArray[0];
       }
-    }
+    },
   },
 };
 </script>
@@ -210,6 +212,7 @@ export default {
 
       .left {
         font-size: 12px;
+        flex: 2;
 
         p:first-child {
           font-size: 24px;
@@ -230,13 +233,19 @@ export default {
       .right {
         font-size: 12px;
         align-items: flex-end;
+        flex: 1;
+
+        p:first-child {
+          text-transform: uppercase;
+        }
       }
     }
 
     .middle {
       margin-top: 50px;
       color: #dfe3fa;
-      gap: 16px;
+      gap: 32px;
+      flex: 1;
 
       h4 {
         font-size: 12px;
@@ -246,38 +255,10 @@ export default {
 
       p {
         font-size: 16px;
+        font-weight: 600;
       }
 
-      .bill,
-      .payment {
-        flex: 1;
-      }
-
-      .payment {
-        h4:nth-child(3) {
-          margin-top: 32px;
-        }
-
-        p {
-          font-weight: 600;
-        }
-      }
-
-      .bill {
-        p:nth-child(2) {
-          font-size: 16px;
-        }
-
-        p:nth-child(3) {
-          margin-top: auto;
-        }
-
-        p {
-          font-size: 12px;
-        }
-      }
-
-      .send-to {
+      .assigned {
         flex: 2;
       }
     }
@@ -285,7 +266,7 @@ export default {
     .bottom {
       margin-top: 50px;
 
-      .billing-items {
+      .cost-items {
         padding: 32px;
         border-radius: 20px 20px 0 0;
         background-color: #252945;

@@ -5,7 +5,6 @@
         <h1 class="hello">Hello, {{ userProfile.firstName }}.</h1>
         <div class="header flex">
           <div class="left flex flex-column">
-            <h1>Tasks</h1>
             <span v-if="taskData.length > 1"
               >There are {{ taskData.length }} total tasks.</span
             >
@@ -24,7 +23,7 @@
               <ul v-show="filterMenu" class="filter-menu">
                 <li @click="filteredTasks">Draft</li>
                 <li @click="filteredTasks">Pending</li>
-                <li @click="filteredTasks">Paid</li>
+                <li @click="filteredTasks">Completed</li>
                 <li @click="filteredTasks">Clear Filter</li>
               </ul>
             </div>
@@ -37,13 +36,24 @@
           </div>
         </div>
 
-        <div v-if="taskData.length > 0">
+        <div class="all-tasks" v-if="taskData.length > 0">
+          <h2>All Tasks</h2>
           <Task
             v-for="(task, index) in filteredData"
             :key="index"
             :task="task"
           />
         </div>
+
+        <div class="assigned-tasks" v-if="taskData.length > 0">
+          <h2>My Tasks</h2>
+          <Task
+            v-for="(task, index) in assignedTasks"
+            :key="index"
+            :task="task"
+          />
+        </div>
+
         <div v-else class="empty flex flex-column">
           <img src="@/assets/illustration-empty.svg" alt="" />
           <h3>There is nothing here</h3>
@@ -65,6 +75,7 @@
 
 <script>
 import { mapMutations, mapActions, mapState } from "vuex";
+import { auth } from "../firebase/firebaseInit";
 import Task from "../components/Task.vue";
 import Groups from "../components/Groups.vue";
 import Loading from "../components/Loading.vue";
@@ -76,6 +87,8 @@ export default {
       filterMenu: null,
       filteredTask: null,
       username: null,
+
+      assignedTasks: [],
     };
   },
   components: {
@@ -105,6 +118,16 @@ export default {
       //await this.GET_USER_DATA();
       console.log(this.userProfile.groupID);
     },
+
+    async loadTasks() {
+      await this.GET_TASKS();
+
+      if (auth.currentUser) {
+        this.assignedTasks = this.taskData.filter((task) => {
+          return task.assignee.id === this.userProfile.userID;
+        });
+      }
+    },
   },
   computed: {
     ...mapState([
@@ -124,15 +147,15 @@ export default {
         if (this.filteredTask === "Pending") {
           return task.taskPending === true;
         }
-        if (this.filteredTask === "Paid") {
-          return task.taskPaid === true;
+        if (this.filteredTask === "Complete") {
+          return task.taskComplete === true;
         }
         return task;
       });
     },
   },
   created() {
-    this.GET_TASKS();
+    this.loadTasks();
     //this.CHECK_LOGIN();
     //this.checkGroups();
   },
@@ -221,6 +244,13 @@ export default {
           }
         }
       }
+    }
+  }
+
+  .all-tasks,
+  .assigned-tasks {
+    h2 {
+      margin-bottom: 16px;
     }
   }
 

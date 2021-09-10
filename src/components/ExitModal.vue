@@ -39,7 +39,7 @@ export default {
 <style lang="scss" scoped>
 .modal {
   position: fixed;
-  z-index: 100;
+  z-index: 101;
   justify-content: center;
   align-items: center;
   height: calc(100vh - 78px - 78px);
