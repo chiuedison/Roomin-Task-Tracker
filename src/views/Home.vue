@@ -75,6 +75,7 @@
 
 <script>
 import { mapMutations, mapActions, mapState } from "vuex";
+import { auth } from "../firebase/firebaseInit";
 import Task from "../components/Task.vue";
 import Groups from "../components/Groups.vue";
 import Loading from "../components/Loading.vue";
@@ -121,9 +122,11 @@ export default {
     async loadTasks() {
       await this.GET_TASKS();
 
-      this.assignedTasks = this.taskData.filter((task) => {
-        return task.assignee.id === this.userProfile.userID;
-      });
+      if (auth.currentUser) {
+        this.assignedTasks = this.taskData.filter((task) => {
+          return task.assignee.id === this.userProfile.userID;
+        });
+      }
     },
   },
   computed: {

@@ -2,7 +2,6 @@ import { createStore } from "vuex";
 import { db, auth } from "../firebase/firebaseInit";
 import firebase from "firebase/app";
 import { uid } from "uid";
-//import router from "@/router";
 
 export default createStore({
   state: {
@@ -106,55 +105,57 @@ export default createStore({
 
       do {
         console.log("waiting on auth...");
-      } while (!auth.currentUser);
+      } while (!auth.currentUser && window.location.pathname === "/");
 
-      commit("CHECK_LOGIN");
-      await dispatch("GET_USER_DATA");
+      if (auth.currentUser) {
+        commit("CHECK_LOGIN");
+        await dispatch("GET_USER_DATA");
 
-      if (state.userProfile.groupID) {
-        const groupDoc = await db
-          .collection("groups")
-          .doc(state.userProfile.groupID)
-          .get();
-        const taskArray = groupDoc.data().tasks;
+        if (state.userProfile.groupID) {
+          const groupDoc = await db
+            .collection("groups")
+            .doc(state.userProfile.groupID)
+            .get();
+          const taskArray = groupDoc.data().tasks;
 
-        taskArray.forEach((groupTaskID) => {
-          // loops through each doc in tasks collection
-          results.forEach((doc) => {
-            // searches for matching task
-            if (groupTaskID == doc.id) {
-              // searches for doc in taskData array, adds it into array if not found
-              if (!state.taskData.some((task) => task.docID === doc.id)) {
-                const data = {
-                  docID: doc.id,
-                  taskID: doc.data().taskID,
+          taskArray.forEach((groupTaskID) => {
+            // loops through each doc in tasks collection
+            results.forEach((doc) => {
+              // searches for matching task
+              if (groupTaskID == doc.id) {
+                // searches for doc in taskData array, adds it into array if not found
+                if (!state.taskData.some((task) => task.docID === doc.id)) {
+                  const data = {
+                    docID: doc.id,
+                    taskID: doc.data().taskID,
 
-                  taskName: doc.data().taskName,
-                  createdBy: doc.data().createdBy,
-                  assignee: doc.data().assignee,
+                    taskName: doc.data().taskName,
+                    createdBy: doc.data().createdBy,
+                    assignee: doc.data().assignee,
 
-                  taskDateUnix: doc.data().taskDateUnix,
-                  taskDate: doc.data().taskDate,
-                  paymentTerms: doc.data().paymentTerms,
-                  taskDueDateUnix: doc.data().taskDueDateUnix,
-                  taskDueDateCal: doc.data().taskDueDateCal,
-                  taskDueDate: doc.data().taskDueDate,
-                  taskDescription: doc.data().taskDescription,
-                  taskPending: doc.data().taskPending,
-                  taskDraft: doc.data().taskDraft,
-                  taskCostList: doc.data().taskCostList,
-                  taskTotal: doc.data().taskTotal,
-                  taskComplete: doc.data().taskComplete,
-                };
+                    taskDateUnix: doc.data().taskDateUnix,
+                    taskDate: doc.data().taskDate,
+                    paymentTerms: doc.data().paymentTerms,
+                    taskDueDateUnix: doc.data().taskDueDateUnix,
+                    taskDueDateCal: doc.data().taskDueDateCal,
+                    taskDueDate: doc.data().taskDueDate,
+                    taskDescription: doc.data().taskDescription,
+                    taskPending: doc.data().taskPending,
+                    taskDraft: doc.data().taskDraft,
+                    taskCostList: doc.data().taskCostList,
+                    taskTotal: doc.data().taskTotal,
+                    taskComplete: doc.data().taskComplete,
+                  };
 
-                commit("SET_TASK_DATA", data);
+                  commit("SET_TASK_DATA", data);
+                }
               }
-            }
+            });
           });
-        });
-      }
+        }
 
-      commit("TASKS_LOADED");
+        commit("TASKS_LOADED");
+      }
     },
 
     async UPDATE_TASK({ commit, dispatch }, { docID, routeID }) {
