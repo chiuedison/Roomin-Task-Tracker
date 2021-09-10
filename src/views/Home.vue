@@ -116,7 +116,7 @@ export default {
 
     async checkGroups() {
       //await this.GET_USER_DATA();
-      console.log(this.userProfile.groupID);
+      //console.log(this.userProfile.groupID);
     },
 
     async loadTasks() {
