@@ -36,6 +36,9 @@
               >
             </select>
           </div>
+          <div class="random flex flex-column">
+            <button type="button" @click="randomAssign">Random</button>
+          </div>
         </div>
       </div>
 
@@ -250,6 +253,10 @@ export default {
         });
       });
     },
+    randomAssign() {
+      const idx = Math.floor(Math.random() * this.groupMembers.length);
+      this.assignee = this.groupMembers[idx];
+    },
     closeTask() {
       this.TOGGLE_TASK();
 
@@ -460,6 +467,17 @@ export default {
 
           option:hover {
             box-shadow: 0 0 10px 100px #7c5dfa inset;
+          }
+        }
+
+        .random {
+          color: white;
+          align-items: center;
+          justify-content: center;
+
+          button {
+            background-color: #7c5dfa;
+            padding: 12px;
           }
         }
       }
